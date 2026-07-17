@@ -1304,7 +1304,7 @@ const Store={
 /* ═══ data ══════════════════════════════════════════════ */
 /* Empreinte de version : sans elle, impossible de savoir si une mise à jour a bien atterri.
    Elle s'affiche dans Réglages → Tes données. */
-const BUILD='2026-07-17l';
+const BUILD='2026-07-17m';
 const DEF={
   version:13,
   settings:{
@@ -3494,43 +3494,30 @@ Chaque cycle possède ainsi sa propre durée de règles. Marquer une fin n'affec
 <p style="margin-top:14px;padding:11px;background:var(--tint);border-radius:10px;font-size:13px">
 Ces bornes sont des moyennes de population. Seul le cycle réel de la personne compte pour lire ses données : n'importe quelle phase peut être corrigée à la main depuis l'écran Aujourd'hui.</p>`},
 
-{k:'noperiod', when:['none','cycles'], t:'« Rien de tout ça », et le RED-S masculin', b:`
-<p>Le réglage « Rien de tout ça » retire le cadran, les marqueurs de règles et les statistiques par phase. Tout le reste du carnet — score, charge, allure, sommeil, humeur, énergie, alimentation — fonctionne à l'identique. Ce réglage couvre plusieurs situations sans rapport entre elles, décrites ci-dessous.</p>
+{k:'noperiod', when:['none','cycles'], t:'Le RED-S, et le réglage « Rien de tout ça »', b:`
+<p>Le réglage « Rien de tout ça » retire le cadran, les marqueurs de règles et les statistiques par phase. Tout le reste — score, charge, allure, sommeil, humeur, énergie, alimentation, interactions, explorateur — fonctionne à l'identique.</p>
+<p>Il couvre trois cas : les <b>hommes</b>, la <b>contraception hormonale continue</b>, et le simple choix de ne pas suivre cet aspect. L'aménorrhée et la ménopause ont leur propre réglage, et leur propre section : elles ne relèvent pas de celui-ci.</p>
+
+<h4>Contraception hormonale continue</h4>
+<p>Sous pilule en continu, implant, stérilet hormonal ou injection, il n'y a pas de cycle physiologique à suivre : les saignements éventuels sont des saignements de privation, pas des règles. Un cadran qui prétendrait afficher une phase folliculaire n'afficherait rien de réel. D'où ce réglage, qui retire le cadran sans rien retirer d'autre.</p>
 
 <h4>Hommes</h4>
 <p>Rien dans ce carnet n'est spécifique à un sexe, hormis le cycle. Le score, la charge (durée × RPE), le RPE, les deux axes d'allure et d'effort perçu, la disponibilité du jour, le signal de fatigue, la relation entre le poids et l'eau, la surcharge progressive, l'explorateur et tout ce qu'il permet de croiser : tout cela est calculé et interprété de façon identique. Ce réglage ne retire donc rien d'utile.</p>
-<p>Un point mérite d'être souligné, parce qu'il est largement méconnu : <b>le RED-S concerne aussi les hommes</b>. Le déficit énergétique relatif dans le sport a longtemps été présenté comme une affaire féminine, à travers la triade de l'athlète féminine dont l'aménorrhée était le signe le plus visible. Le consensus 2023 du Comité international olympique est explicite sur ce point : le syndrome touche <b>tout athlète, quels que soient son genre, son sport et son niveau</b>. Chez l'homme, il se manifeste notamment par une baisse de la testostérone, une perte de densité osseuse, une immunité affaiblie et une performance dégradée — sans le signal d'alerte qu'apporte l'arrêt des règles. L'absence de ce marqueur rend le repérage plus tardif, pas le risque plus faible. <span class="ev solid">établi</span></p>
-<p>Le consensus souligne également le <b>recouvrement entre RED-S et syndrome de surentraînement</b> : deux tableaux cliniques proches, dont l'un se corrige en mangeant davantage. Le signal de fatigue de l'écran Aujourd'hui (énergie basse et charge élevée sur trois jours) est un garde-fou grossier, en aucun cas un dépistage.</p>
+
+<h4>Le RED-S, et pourquoi il figure ici</h4>
+<p><b>De quoi il s'agit.</b> Le RED-S — <em>Relative Energy Deficiency in Sport</em>, déficit énergétique relatif dans le sport — désigne ce qui arrive à un corps qui <b>dépense plus qu'il ne reçoit</b>, de façon durable. Ce n'est ni un trouble alimentaire, ni un manque de volonté : c'est un <b>état physiologique</b>, celui d'un organisme qui, faute de carburant suffisant, réduit les dépenses qu'il juge non vitales.</p>
+<p>La notion clé est la <b>disponibilité énergétique</b> : ce qui reste de l'apport alimentaire une fois l'entraînement payé. Quand ce reste devient trop faible, le corps arbitre. Il coupe d'abord ce qui peut attendre — la reproduction, la construction osseuse, l'immunité, la thermorégulation — et garde ce qui ne peut pas.</p>
+<p>Le consensus 2023 du Comité international olympique en décrit les conséquences sur <b>l'os, l'endocrinien, le métabolisme, le cardiovasculaire, l'immunité, le psychologique</b> — et pas seulement sur la fonction reproductive. Sa prévalence est estimée entre <b>15 et 80 %</b> selon les sports. <span class="ev solid">établi</span></p>
+<p>Deux constats du consensus méritent d'être cités tels quels. Le syndrome <b>passe souvent inaperçu des athlètes elles-mêmes</b>, de leurs entraîneurs et de leurs cliniciens. Et il peut être <b>involontairement aggravé par la culture sportive</b>, en raison des gains de performance à court terme que semble procurer la restriction calorique — avant que la note ne tombe.</p>
+<p><b>Il ne s'agit pas d'une affaire féminine.</b> Le RED-S a longtemps été présenté comme telle, à travers la triade de l'athlète féminine, dont l'aménorrhée était le signe le plus visible. Le consensus est explicite : il touche <b>tout athlète, quels que soient son genre, son sport et son niveau</b>. Chez l'homme, il se manifeste notamment par une baisse de la testostérone, une perte de densité osseuse, une immunité affaiblie et une performance dégradée — <b>sans le signal d'alerte qu'apporte l'arrêt des règles</b>. L'absence de ce marqueur rend le repérage plus tardif, pas le risque plus faible. <span class="ev solid">établi</span></p>
+<p>Le consensus souligne également le <b>recouvrement avec le syndrome de surentraînement</b> : deux tableaux cliniques proches, dont l'un se corrige en mangeant davantage. Confondre les deux conduit à s'entraîner moins là où il aurait fallu manger plus.</p>
+<p><b>Ce que ce carnet peut, et ne peut pas.</b> Le signal de fatigue de l'écran Aujourd'hui — énergie basse et charge élevée sur trois jours — est un garde-fou grossier. Il ne dépiste rien, il ne mesure aucune disponibilité énergétique, et il ne remplace aucun avis. Aucun indicateur ici n'est un dépistage. Un doute se discute avec un professionnel de santé, pas avec une application.</p>
 <div class="ref">
 Mountjoy M, Ackerman KE, Bailey DM, Burke LM, Constantini N, Hackney AC, Heikura IA, Melin A, Pensgaard AM, Stellingwerff T, Sundgot-Borgen JK, Torstveit MK, Jacobsen AU, Verhagen E, Budgett R, Engebretsen L, Erdener U. « 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). » <em>British Journal of Sports Medicine</em>, 2023;57(17):1073–1097. doi:10.1136/bjsports-2023-106994
 </div>
-
-<h4>Ménopause et périménopause</h4>
-<p>La ménopause est définie rétrospectivement, après douze mois consécutifs sans règles. La périménopause désigne la période de transition qui la précède, souvent marquée par des cycles irréguliers avant leur arrêt. Sur le plan de la composition corporelle, la baisse durable des œstrogènes s'accompagne d'une perte de masse musculaire et de densité osseuse, et d'une redistribution de la masse grasse vers l'abdomen. <span class="ev solid">établi</span></p>
-<p>Ce que l'exercice y change est documenté par une méta-analyse de 101 essais contrôlés randomisés portant sur 5 697 femmes ménopausées. L'entraînement, tous types confondus, augmente la masse maigre de <b>+0,66 kg</b> (IC 95 % : 0,50 à 0,81), diminue la masse grasse de <b>−1,27 kg</b> (IC 95 % : −1,93 à −0,62), le pourcentage de masse grasse de <b>−1,86 %</b> et le tour de taille de <b>−1,45 cm</b>. Ces effets apparaissent quel que soit l'âge et quelle que soit la durée de l'intervention. <span class="ev solid">établi</span></p>
-<p>La même analyse sépare nettement les deux modalités : <b>l'aérobie agit surtout sur la masse grasse</b> (−1,94 kg, contre −0,45 kg pour la musculation, non significatif), <b>la musculation agit surtout sur la masse musculaire</b> (masse maigre +0,90 kg). D'où la conclusion des auteurs : combiner les deux. <span class="ev likely">probable</span></p>
-<p><b>Conséquence pratique pour ce carnet.</b> À cette période de la vie, le tour de taille et les mensurations deviennent plus informatifs que le poids seul, puisqu'une partie du changement est une redistribution à masse constante. Les deux se saisissent depuis l'écran Semaine, à condition d'avoir activé « Poids et mensurations » dans les réglages.</p>
-<div class="ref">
-Khalafi M, Habibi Maleki A, Sakhaei MH, Rosenkranz SK, Pourvaghar MJ, Ehsanifar M, Bayat H, Korivi M, Liu Y. « The effects of exercise training on body composition in postmenopausal women: a systematic review and meta-analysis. » <em>Frontiers in Endocrinology</em>, 2023;14:1183765. doi:10.3389/fendo.2023.1183765<br><br>
-Shojaa M, von Stengel S, Schoene D, Kohl M, Barone G, Bragonzoni L, et al. « Effect of Exercise Training on Bone Mineral Density in Post-menopausal Women: A Systematic Review and Meta-Analysis of Intervention Studies. » <em>Frontiers in Physiology</em>, 2020;11:652. doi:10.3389/fphys.2020.00652
-</div>
-
-<h4>Aménorrhée</h4>
-<p>Une aménorrhée — absence de règles hors grossesse, allaitement et ménopause — n'est pas une simple « absence de cycle ». C'est un signe clinique, et il mérite un avis médical plutôt qu'un réglage d'application.</p>
-<p>Une des causes possibles concerne directement les personnes qui utiliseraient ce carnet : <b>l'aménorrhée hypothalamique fonctionnelle</b>, liée à une <b>faible disponibilité énergétique</b>, c'est-à-dire un apport alimentaire insuffisant au regard de la dépense à l'entraînement. Elle constitue l'une des trois composantes historiques de la triade de l'athlète féminine, aujourd'hui intégrée au cadre plus large du <b>RED-S</b> (déficit énergétique relatif dans le sport). <span class="ev solid">établi</span></p>
-<p>Le consensus 2023 du Comité international olympique décrit un syndrome qui affecte de multiples systèmes — osseux, endocrinien, métabolique, cardiovasculaire, immunitaire, psychologique — et pas seulement la fonction reproductive. Sa prévalence est estimée entre <b>15 et 80 %</b> selon les sports. Deux constats du consensus méritent d'être cités ici : le syndrome <b>passe souvent inaperçu des athlètes elles-mêmes</b>, de leurs entraîneurs et de leurs cliniciens ; et il peut être <b>involontairement aggravé par la culture sportive</b>, en raison des gains de performance à court terme que semble procurer la restriction calorique. Le consensus souligne également le recouvrement entre RED-S et syndrome de surentraînement. <span class="ev solid">établi</span></p>
-<p style="padding:11px;background:var(--tint);border-radius:10px;font-size:13px;border-left:2.5px solid var(--period)">
-<b>Ce qu'il convient de retenir.</b> Une aménorrhée survenant dans un contexte d'entraînement soutenu, de perte de poids ou de restriction alimentaire justifie une consultation médicale — indépendamment de ce que dit ce carnet, et sans attendre. Aucun indicateur de cette application n'est conçu pour détecter un RED-S, et le score sur 100 n'a pas été construit pour cela. Le signal de fatigue de l'écran Aujourd'hui repère une charge élevée associée à une énergie basse ; c'est un garde-fou grossier, en aucun cas un dépistage.</p>
-<p>Un point de méthode, enfin : dans une situation de faible disponibilité énergétique, un carnet qui suit le poids et l'alimentation peut renforcer ce qu'il devrait alléger. Le réglage « Poids et mensurations », désactivé par défaut, existe précisément pour permettre de suivre l'entraînement, le sommeil et l'humeur sans jamais afficher un chiffre de balance.</p>
-<div class="ref">
-Mountjoy M, Ackerman KE, Bailey DM, Burke LM, Constantini N, Hackney AC, Heikura IA, Melin A, Pensgaard AM, Stellingwerff T, Sundgot-Borgen JK, Torstveit MK, Jacobsen AU, Verhagen E, Budgett R, Engebretsen L, Erdener U. « 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). » <em>British Journal of Sports Medicine</em>, 2023;57(17):1073–1097. doi:10.1136/bjsports-2023-106994
-</div>
-
-<h4>Contraception hormonale continue</h4>
-<p>Stérilet hormonal, implant, pilule en continu : l'absence de règles y est attendue et sans conséquence connue sur la santé. Les phases n'ayant plus de signification dans ce contexte, le réglage « Pas de règles » convient.</p>
 
 <h4>Ce qui reste valable dans tous les cas</h4>
-<p>Aucune des mesures centrales de ce carnet ne dépend du cycle. Le score, la charge d'entraînement (durée × RPE), le signal de fatigue, la disponibilité du jour, les deux axes d'allure et d'effort perçu et l'ensemble des croisements entre sommeil, énergie, humeur et alimentation sont calculés à l'identique. Seules disparaissent les comparaisons entre phases.</p>`},
+<p>Les seuils du carnet sont personnels et se règlent : sommeil, pas, eau, charge. Les comparaisons de l'explorateur coupent aux <b>propres médianes</b>, jamais à des normes de population. Le barème du score se modifie item par item. Rien de tout cela ne dépend du cycle, ni d'un sexe.</p>`},
 
 {k:'training', when:['cycles'], t:'Cycle et entraînement : ce que dit la recherche', b:`
 <p>C'est le point sur lequel ce carnet s'écarte le plus de ce qui se lit ailleurs. Le « cycle syncing » — entraîner la force en phase folliculaire, lever le pied en phase lutéale — est très répandu. La base de preuves, elle, est mince.</p>

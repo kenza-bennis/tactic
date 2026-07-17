@@ -21,7 +21,7 @@
 
 /* Le nom porte la date : le changer suffit à purger l'ancien cache à l'activation.
    Sans ça, une version corrigée pourrait rester invisible derrière une version gardée. */
-const CACHE = 'tactic-2026-07-17l';
+const CACHE = 'tactic-2026-07-17m';
 
 /* Le strict nécessaire pour démarrer sans réseau. */
 const SHELL = [
