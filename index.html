@@ -1035,8 +1035,13 @@ summary.acc-h::-webkit-details-marker{display:none}
       <div class="card-h">Où elles sont, à l'instant</div>
       <div id="diag" style="margin-bottom:14px"></div>
       <div class="note" style="border:none;padding-top:0;margin-top:0;margin-bottom:12px">
-        Tout est stocké dans ce navigateur, sur cet appareil. Rien n'est envoyé nulle part, et personne d'autre n'y a accès —
-        pas même moi. Revers de la médaille : vider les données du navigateur les efface. Exporte de temps en temps.
+        Ce que tu remplis reste sur cet appareil et n'est jamais transmis. TacTic envoie uniquement des signaux d'usage
+        anonymes — une ouverture, une première utilisation, un jour actif — sans aucun contenu ni identifiant.
+        Revers de la médaille de tes données : vider celles du navigateur les efface. Exporte de temps en temps.
+      </div>
+      <div class="set" style="border-top:1px solid var(--line);padding-top:12px;margin-bottom:2px">
+        <div class="t"><b>Signaux d'usage anonymes</b><span>Aide à savoir si TacTic sert à quelqu'un. Aucun contenu, jamais.</span></div>
+        <div class="c"><button class="sw" id="swAnalytics" role="switch" aria-checked="true"></button></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <button class="btn sec" id="btnJSON">Exporter en JSON (sauvegarde)</button>
@@ -1304,11 +1309,11 @@ const Store={
 /* ═══ data ══════════════════════════════════════════════ */
 /* Empreinte de version : sans elle, impossible de savoir si une mise à jour a bien atterri.
    Elle s'affiche dans Réglages → Tes données. */
-const BUILD='2026-07-17m';
+const BUILD='2026-07-17o';
 const DEF={
   version:13,
   settings:{
-    showBody:false, showSocial:true, sex:'f', situation:'cycles', theme:'auto',
+    showBody:false, showSocial:true, analytics:true, sex:'f', situation:'cycles', theme:'auto',
     socialApps:['Instagram','YouTube','Facebook','Substack'],
     dueDate:'', birthDate:'', breastfeeding:false,
     periodLen:5, cycleLen:28,
@@ -1372,6 +1377,7 @@ function normalize(o){
   });
   const SITS=['cycles','amenorrhea','menopause','pregnant','postpartum','none'];
   if(out.settings.sex!=='f'&&out.settings.sex!=='m') out.settings.sex='f';
+  if(typeof out.settings.analytics!=='boolean') out.settings.analytics=true;
   const raw=(o&&o.settings)||{};        // lire l'ORIGINAL : out.settings porte déjà les défauts de v5
   if(!SITS.includes(raw.situation)){
     out.settings.situation = (raw.cycle==='none'||raw.cycle==='cycles') ? raw.cycle   // v4 : mode cycle
@@ -3322,7 +3328,11 @@ Safari efface le stockage local d'un site après <b>sept jours d'utilisation de 
 Les applications ajoutées à l'écran d'accueil sont <b>exemptées</b> de cette règle : la documentation de WebKit précise que ce mécanisme les ignore purement et simplement. Elles disposent en outre de leur <b>propre espace de stockage</b>, séparé de celui de Safari — d'où l'ordre : ajouter à l'écran d'accueil, <em>puis</em> saisir. Ce qui aurait été rempli dans Safari avant l'ajout risque de ne pas suivre.</p>
 <p><b>Quel navigateur, sur iPhone ?</b> Safari — et ce n'est pas une préférence. Sur iOS, tous les navigateurs sont bâtis sur le moteur d'Apple : Chrome, Firefox ou Edge n'y sont que des habillages autour de la même mécanique. Changer d'icône ne change ni le moteur, ni le stockage, ni la règle des sept jours. Le droit européen autorise d'autres moteurs depuis 2024, mais aucun navigateur grand public n'en a réellement livré un à ce jour. Surtout, l'ajout à l'écran d'accueil — l'étape qui donne l'exemption — est une fonction de Safari : c'est depuis Safari qu'elle se fait de façon fiable.</p>
 <p><b>Android</b> — ouvrir l'adresse dans Chrome, attendre quelques secondes, puis menu ⋮ en haut à droite, <b>« Installer l'application »</b>. Là, Chrome est un vrai Chrome, avec son propre moteur, et aucune règle d'effacement équivalente ne s'applique.</p>
-<p>Si le menu dit encore « Ajouter à l'écran d'accueil » plutôt qu'« Installer l'application », recharger une fois : Chrome a besoin d'une visite pour constater que tout est en place. Samsung Internet fonctionne aussi — le menu y dit <em>Ajouter la page à → Écran d'accueil</em>.</p>
+<p style="padding:11px;background:var(--tint);border-radius:10px;font-size:13px;border-left:2.5px solid var(--period)">
+<b>Si le menu dit « Ajouter à l'écran d'accueil » au lieu d'« Installer l'application », c'est presque toujours la même cause : le mode « Version ordinateur » est activé.</b><br><br>
+Il se trouve dans le même menu ⋮, tout en bas. <b>Décoche-le</b>, recharge la page, et l'option change. En mode ordinateur, Chrome considère qu'il n'est pas un téléphone : il n'installe pas d'application et ne propose qu'un marque-page — celui qui porte une icône générique.<br><br>
+Si le mode ordinateur est déjà décoché, recharge simplement une fois : Chrome a besoin d'une visite pour constater que tout est en place.</p>
+<p><b>Firefox</b> propose la même chose, sous un autre nom : ⋮ → <em>Ajouter l'application à l'écran d'accueil</em>. Attention, c'est différent d'<em>Ajouter aux raccourcis</em>, qui n'est qu'un marque-page. <b>Samsung Internet</b> aussi — le menu y dit <em>Ajouter la page à → Écran d'accueil</em>.</p>
 <p><b>Ordinateur</b> — un marque-page suffit.</p>
 <p><b>À partir du fichier seul</b> — le carnet s'ouvre et garde ses données, mais avec trois limites. Épinglé, il porte l'icône générique d'un fichier HTML. Il ne se met jamais à jour. Et il doit <b>rester exactement au même endroit</b> : déplacé ou re-téléchargé ailleurs, le navigateur le voit comme une nouvelle page et ne retrouve plus rien. iOS s'y prête particulièrement mal — il n'ouvre pas volontiers les pièces jointes .html dans Safari, et l'aperçu de l'app Fichiers n'autorise pas l'ajout à l'écran d'accueil.</p>
 <p>Au tout premier chargement, une connexion est utile : elle sert uniquement à télécharger les trois polices de caractères. Ensuite, tout fonctionne hors ligne. Sans connexion, l'application s'affiche avec les polices du système : c'est moins joli, rien d'autre ne change.</p>
@@ -4075,6 +4085,7 @@ function renderSet(){
   $('#setGoalLabel').value=s.goalLabel||''; $('#setGoalDate').value=s.goalDate||'';
   renderSports(); renderSocialApps(); renderWeights();
   $('#swSocial').setAttribute('aria-checked', s.showSocial?'true':'false');
+  $('#swAnalytics').setAttribute('aria-checked', s.analytics?'true':'false');
   $('#secSocial').classList.toggle('hide', !s.showSocial);
   $('#cardSocial').classList.toggle('hide', !s.showSocial);
   const op=obsPeriodLens();
@@ -4087,6 +4098,47 @@ function renderSet(){
     : `Utilisée tant qu'il n'y a pas 3 cycles (tu en as ${ob.length})`;
 }
 /* Diagnostic : répond à « où sont mes données ? » par l'état réel, pas par une promesse. */
+/* Adresse GoatCounter : à remplacer par le code choisi à l'inscription sur
+   goatcounter.com (ex. si le code est « tactic », l'adresse devient déjà la bonne). */
+const GC_SITE = 'https://tactic.goatcounter.com/count';
+
+/* Un événement nommé, jamais de contenu, jamais d'identifiant. Si le script n'a pas
+   chargé — bloqueur de publicité, hors ligne — l'appel ne fait rien, silencieusement :
+   ce ne sont que des signaux d'usage, leur perte occasionnelle n'a aucune conséquence. */
+function gcEvent(path){
+  if(S().analytics===false) return;
+  try{ if(window.goatcounter && goatcounter.count) goatcounter.count({path, event:true}); }catch(e){}
+}
+
+/* Quatre signaux, calculés sur l'appareil à partir de ce qu'il sait déjà de lui-même :
+   jamais de date ni d'identifiant transmis, seulement un nom d'événement quand un
+   seuil est franchi. La rétention se lit ensuite en divisant deux compteurs entre eux,
+   après coup — jamais en recoupant deux visites. */
+function initUsage(){
+  if(!location.protocol.startsWith('http')) return;    // jamais depuis un fichier local
+  if(S().analytics===false) return;
+  if(!document.getElementById('gc-script')){
+    const gcs=document.createElement('script');
+    gcs.id='gc-script'; gcs.async=true; gcs.src='https://gc.zgo.at/count.js';
+    gcs.setAttribute('data-goatcounter', GC_SITE);
+    document.head.appendChild(gcs);
+  }
+  let u; try{ u=JSON.parse(localStorage.getItem('tactic:usage')||'{}'); }catch(e){ u={}; }
+
+  if(!u.firstUseAt && loggedDates().some(s=>{const d=DB.days[s]; return d&&hasEntry(d)&&!d.na;})){
+    u.firstUseAt=today(); gcEvent('premiere_utilisation');
+  }
+  const td=DB.days[today()];
+  if(td && hasEntry(td) && !td.na && u.lastActiveDay!==today()){
+    u.lastActiveDay=today(); gcEvent('jour_actif');
+  }
+  if(u.firstUseAt){
+    const n=diffD(u.firstUseAt, today());
+    if(n>=7  && !u.r7){  u.r7=true;  gcEvent('toujours_la_7j');  }
+    if(n>=30 && !u.r30){ u.r30=true; gcEvent('toujours_la_30j'); }
+  }
+  try{ localStorage.setItem('tactic:usage', JSON.stringify(u)); }catch(e){}
+}
 function renderDiag(){
   const ios=/iPad|iPhone|iPod/.test(navigator.userAgent);
   const standalone = (navigator.standalone===true) || (matchMedia('(display-mode: standalone)').matches);
@@ -4095,7 +4147,7 @@ function renderDiag(){
   const rows=[
     ['Enregistrées dans', MODE[Store.mode]||'—'],
     ['Origine',           file ? 'fichier local' : (location.host||'—')],
-    ['Envoyées à',        'personne — aucune requête sortante'],
+    ['Envoyées à',        S().analytics ? 'signaux d\u2019usage anonymes (GoatCounter)' : 'personne — aucune requête sortante'],
     ['Ouvert depuis',     standalone ? "l'écran d'accueil" : (file ? 'un fichier local' : 'un onglet de navigateur')],
     ['Jours enregistrés', String(loggedDates().length)],
     ['Dernière sauvegarde', ago(S().lastExport) || 'jamais'],
@@ -4514,6 +4566,7 @@ function bind(){
 
   $('#swBody').onclick=()=>{ S().showBody=!S().showBody; save(); renderSet(); };
   $('#swSocial').onclick=()=>{ S().showSocial=!S().showSocial; save(); renderSet(); renderGuide(); };
+  $('#swAnalytics').onclick=()=>{ S().analytics=!S().analytics; save(); renderSet(); if(S().analytics) initUsage(); };
   $('#socialRows').addEventListener('input',e=>{
     const r=e.target.closest('.srow'); if(!r) return;
     S().socialApps[+r.dataset.i]=e.target.value; save();
@@ -4664,6 +4717,7 @@ addEventListener('error', ev=>{ if(!document.querySelector('nav')) fatal(ev.erro
      local, l'enregistrement échoue, et c'est sans conséquence. */
   if('serviceWorker' in navigator && location.protocol.startsWith('http'))
     navigator.serviceWorker.register('sw.js').catch(()=>{});
+  initUsage();
   if(Store.mode==='mem') setTimeout(()=>toast('Aperçu seulement — télécharge le fichier pour garder tes données'),900);
   }catch(e){ fatal(e); }
 })();

@@ -61,7 +61,9 @@ Le carnet ne bricole pas ses échelles quand il en existe de validées :
 
 ## Les données
 
-Elles vivent dans le navigateur, sur l'appareil, et nulle part ailleurs. Pas de compte, pas de serveur, pas de requête sortante.
+Elles vivent dans le navigateur, sur l'appareil, et nulle part ailleurs. Pas de compte, pas de serveur.
+
+Ce que tu remplis n'est jamais transmis. TacTic envoie uniquement des signaux d'usage anonymes — une ouverture, une première utilisation, un jour actif — sans aucun contenu ni identifiant, et désactivables en un geste dans les réglages.
 
 Le fichier peut donc s'envoyer à qui on veut : **les données ne voyagent pas avec lui**. Chaque personne remplit le sien.
 
@@ -70,7 +72,7 @@ L'écran des réglages affiche l'état réel du stockage, plutôt qu'une promess
 ```
 Enregistrées dans    ce navigateur, sur cet appareil
 Origine              exemple.fr
-Envoyées à           personne — aucune requête sortante
+Envoyées à           signaux d'usage anonymes (désactivable)
 Ouvert depuis        l'écran d'accueil
 Dernière sauvegarde  il y a 3 jours
 ```
@@ -124,3 +126,8 @@ Cette dernière clause est la raison du choix : c'est elle qui empêche qu'on re
 
 Polices : [Fraunces](https://github.com/undercasetype/Fraunces), [Karla](https://github.com/googlefonts/karla), [IBM Plex Mono](https://github.com/IBM/plex) — sous SIL Open Font License.
 
+## Le logo
+
+Un soleil. Un disque bleu, cerclé d'un anneau dont un fin espace le sépare, et un axe qui vient de l'extérieur le rejoindre au lieu d'en partir.
+
+Sept rayons longs portent les teintes des quatre phases du cycle ; huit rayons courts les accompagnent en gris, sans jamais dominer.
