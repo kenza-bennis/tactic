@@ -1,0 +1,19 @@
+{
+  "name": "tactic-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Outillage de TacTic : logo, captures, tests. L'application elle-même n'a aucune dépendance.",
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "test": "node test/run.mjs",
+    "shots": "node screenshots.mjs",
+    "logo": "python3 logo.py"
+  },
+  "devDependencies": {
+    "puppeteer": "^23.0.0",
+    "@fontsource/fraunces": "^5.0.0",
+    "@fontsource/karla": "^5.0.0",
+    "@fontsource/ibm-plex-mono": "^5.0.0"
+  }
+}
