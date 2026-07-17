@@ -125,9 +125,3 @@ Ce n'est pas un dispositif médical, et il ne prétend rien dépister. Le Réper
 Cette dernière clause est la raison du choix : c'est elle qui empêche qu'on reprenne ce carnet, l'habille autrement et le vende sans jamais rien rendre.
 
 Polices : [Fraunces](https://github.com/undercasetype/Fraunces), [Karla](https://github.com/googlefonts/karla), [IBM Plex Mono](https://github.com/IBM/plex) — sous SIL Open Font License.
-
-## Le logo
-
-Un soleil. Un disque bleu, cerclé d'un anneau dont un fin espace le sépare, et un axe qui vient de l'extérieur le rejoindre au lieu d'en partir.
-
-Sept rayons longs portent les teintes des quatre phases du cycle ; huit rayons courts les accompagnent en gris, sans jamais dominer.
