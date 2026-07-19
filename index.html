@@ -779,7 +779,7 @@ summary.acc-h::-webkit-details-marker{display:none}
   </div>
 
   <div class="card" id="cardWMeals">
-    <div class="card-h">Alimentation <span class="r">moyenne de la semaine</span></div>
+    <div class="card-h">Alimentation <span class="r">part des jours de la semaine</span></div>
     <div class="bars" id="wMeals"></div>
   </div>
 
@@ -853,6 +853,11 @@ summary.acc-h::-webkit-details-marker{display:none}
     </div>
     <div id="expOut"></div>
     <div class="note" id="expNote"></div>
+  </div>
+
+  <div class="card" id="cardSatiety">
+    <div class="card-h">Rassasiement <span class="r">au niveau des repas</span></div>
+    <div id="satOut"></div>
   </div>
 
 
@@ -2204,7 +2209,6 @@ function renderMeals(d){
       <div data-meal="${k}" style="display:flex;flex-wrap:wrap;gap:4px;flex:1">
         ${MCRIT.map(([c,lab])=>`<button class="mchip${MFLAG[c]?' flag':''}" data-c="${c}" title="${esc(lab)}" aria-label="${esc(lab)}">${c}</button>`).join('')}
       </div>
-      <span class="num" data-mc="${k}" style="flex:0 0 30px;text-align:right;color:var(--ink-3);font-size:12px"></span>
     </div>`).join('');
     w.dataset.built='1';
     w.addEventListener('click',e=>{
@@ -2217,16 +2221,14 @@ function renderMeals(d){
       save(); renderDay();
     });
   }
-  $('#mealNote').innerHTML = '<b>Coche à chaque repas chaque critère qu\u2019il remplit. La note du repas = le nombre de critères comptés (G·P·L·F·Ln·r) :</b>'
+  $('#mealNote').innerHTML = '<b>Coche ce que le repas contenait :</b>'
     + '<div style="margin-top:6px;display:grid;gap:3px">'
     + MCRIT.map(([c,lab])=>`<div><b>${c}</b> ${lab.toLowerCase()} <span style="color:var(--ink-3)">\u2014 ${MEX[c]}</span></div>`).join('')
     + '</div>'
-    + '<div style="color:var(--ink-3);margin-top:6px"><b>m</b> (maison) et <b>u</b> (ultra-transformé) sont notés, mais ne comptent pas dans la note.</div>';
+    + '<div style="color:var(--ink-3);margin-top:6px">Aucune note, aucun jugement : c\u2019est un relevé. Coche <b>r</b> quand le repas t\u2019a laissée rassasiée jusqu\u2019au suivant \u2014 c\u2019est ce que les Bilans croisent avec le reste.</div>';
   $$('[data-meal]',w).forEach(g=>{
     const k=g.dataset.meal, m=mObj(d,k);
     $$('button[data-c]',g).forEach(b=>b.setAttribute('aria-pressed', m&&m[b.dataset.c]?'true':'false'));
-    const badge=$(`[data-mc="${k}"]`);
-    if(badge) badge.textContent = m ? (mCount(d,k)+'/'+MPOS.length) : (isNum(d.meals[k]) ? d.meals[k]+'/4' : '');
   });
 }
 function renderSess(d){
@@ -2365,21 +2367,12 @@ function wBars(sel, rows, max, fmt, vide){
   return true;
 }
 function renderWMeals(ds){
-  const rows=MEALK.map(([k,l])=>{
-    const v=ds.map(x=>{const d=DB.days[x]; return (d&&!d.na)?mCount(d,k):null;}).filter(y=>y!==null);
-    return {l, v:v.length?mean(v):0, n:v.length};
+  const rows=MCRIT.map(([c,lab])=>{
+    const v=ds.map(x=>{const d=DB.days[x]; return (d&&!d.na)?mRate(d,c):null;}).filter(y=>y!==null);
+    return {l:lab, v:v.length?mean(v):0, n:v.length};
   });
-  wBars('#wMeals', rows, MPOS.length, v=>fx(v,1),
-    'Coche les critères de tes repas depuis l\u2019écran Aujourd\u2019hui, et la ventilation apparaîtra ici.');
-  const all=rows.filter(r=>r.n>0);
-  if(all.length){
-    const tot=ds.map(x=>{const d=DB.days[x]; return (d&&!d.na)?mealsMean(d):null;}).filter(y=>y!==null);
-    const best=[...all].sort((a,b)=>b.v-a.v)[0], worst=[...all].sort((a,b)=>a.v-b.v)[0];
-    $('#wMeals').insertAdjacentHTML('beforeend',
-      `<div class="note">Moyenne de la semaine : <b>${fx(mean(tot),1)}/${MPOS.length}</b>.${
-        all.length>1?` C'est <b>${esc(best.l.toLowerCase())}</b> qui coche le plus de critères, <b>${esc(worst.l.toLowerCase())}</b> le moins.`:''
-      } Chaque note est un décompte de critères positifs, pas un jugement — le Répertoire les liste.</div>`);
-  }
+  wBars('#wMeals', rows, 1, v=>Math.round(v*100)+' %',
+    'Coche la composition de tes repas depuis l\u2019écran Aujourd\u2019hui, et la part des jours apparaîtra ici.');
 }
 function renderWSI(ds){
   const rows=SIWHO.map(([k,l])=>{
@@ -2681,6 +2674,40 @@ function renderPins(){
     ${answer(q)}</div>`).join('');
   $('#expCount').textContent = P.length ? `${P.length} épinglée${P.length>1?'s':''}` : '';
 }
+function satietyStats(){
+  const preds=MCRIT.filter(([c])=>c!=='r');            // r est l'issue, pas un prédicteur
+  const acc={}; preds.forEach(([c])=>acc[c]={ws:0,wt:0,os:0,ot:0});
+  let nMeals=0;
+  loggedDates().forEach(s=>{ const d=DB.days[s]; if(!d||d.na) return;
+    MEALK.forEach(([k])=>{ const m=mObj(d,k); if(!m||!Object.keys(m).length) return;  // repas renseigné = ≥1 critère
+      nMeals++; const sat=m.r?1:0;
+      preds.forEach(([c])=>{ if(m[c]){ acc[c].wt++; acc[c].ws+=sat; } else { acc[c].ot++; acc[c].os+=sat; } });
+    });
+  });
+  return {nMeals, acc, preds};
+}
+function renderSatiety(){
+  const el=$('#satOut'); if(!el) return;
+  const {nMeals, acc, preds}=satietyStats();
+  const MIN=5;
+  const rows=preds.map(([c,lab])=>{ const a=acc[c];
+    if(a.wt<MIN||a.ot<MIN) return null;
+    const w=a.ws/a.wt, o=a.os/a.ot;
+    return {lab, w, o, gap:w-o, wn:a.wt, on:a.ot};
+  }).filter(Boolean).sort((x,y)=>Math.abs(y.gap)-Math.abs(x.gap));
+  if(nMeals<MIN*2 || !rows.length){
+    el.innerHTML='<div class="note">Coche <b>r</b> (rassasiée) et la composition de tes repas pendant quelques jours. Dès qu\u2019un critère compte assez de repas des deux côtés, sa comparaison apparaît ici.</div>';
+    return;
+  }
+  const pct=v=>Math.round(v*100)+' %';
+  el.innerHTML='<p style="color:var(--ink-2);font-size:13px;margin:0 0 9px">Sur <b>'+nMeals+'</b> repas renseignés, la part de ceux qui t\u2019ont laissée rassasiée jusqu\u2019au repas suivant, selon ce qu\u2019ils contenaient :</p>'
+    + rows.map(r=>`<div style="margin-bottom:9px">
+        <div style="display:flex;justify-content:space-between;font-size:13px"><b>${esc(r.lab)}</b>
+          <span style="color:${r.gap>=0?'var(--accent-t)':'var(--ink-3)'}">${r.gap>=0?'+':''}${Math.round(r.gap*100)} pts</span></div>
+        <div style="font-size:12px;color:var(--ink-2)">avec\u00a0: <b>${pct(r.w)}</b> <span style="color:var(--ink-3)">(n=${r.wn})</span> \u00b7 sans\u00a0: <b>${pct(r.o)}</b> <span style="color:var(--ink-3)">(n=${r.on})</span></div>
+      </div>`).join('')
+    + '<div class="note">Ces comparaisons portent sur des <b>repas</b>, pas des jours. Un repas compte comme rassasiant quand <b>r</b> y est coché. Les effectifs (n) disent le poids de chaque écart \u2014 un écart sur douze repas ne vaut pas un écart sur cent.</div>';
+}
 function renderStats(){
   const ld=loggedDates();
   if(!ld.length){
@@ -2714,6 +2741,7 @@ function renderStats(){
 
   $('#cardSocialStats').classList.toggle('hide', !S().showSocial);
   renderExp();
+  renderSatiety();
   $('#cardPhaseSI').classList.toggle('hide', !cycleOn());
   renderHeat(); renderWeight(); renderPanasStats(); renderPhaseTable();
   if(cycleOn()) renderPhaseSI();
@@ -2930,7 +2958,6 @@ const OUT={
   siN:   {g:'others', l:'Types d\u2019interlocuteurs', f:(s,d)=>d.si.had===null?null:siCount(d), fmt:v=>fnum(v,1)+' types'},
   ...Object.fromEntries(SIWHO.map(([k,l])=>['siq_'+k,
     {g:'others', l:'Qualité — '+l.toLowerCase(), f:(s,d)=>siQualOf(d,k), fmt:v=>fnum(v,2)+'/5'}])),
-  meals: {g:'meals', l:'Qualité des repas',    f:(s,d)=>mealsMean(d), fmt:v=>fnum(v,2)+'/'+MPOS.length},
   oGluc: {g:'meals', l:'Glucides',             f:(s,d)=>mRate(d,'G'),  fmt:v=>Math.round(v*100)+' % des jours'},
   oProt: {g:'meals', l:'Protéines',            f:(s,d)=>{const v=hasProtein(d);return v===null?null:(v?1:0);}, fmt:v=>Math.round(v*100)+' % des jours'},
   oVeg:  {g:'meals', l:'Légumes',              f:(s,d)=>mRate(d,'L'),  fmt:v=>Math.round(v*100)+' % des jours'},
@@ -3555,7 +3582,7 @@ Si le mode ordinateur est déjà décoché, recharge simplement une fois : Chrom
 <p><b>La disponibilité</b> combine le sommeil, l'énergie et la charge des trois derniers jours en un repère indicatif — un repère maison, pas une mesure validée, et l'affichage le dit. En dessous peut apparaître un <b>signal de fatigue</b> : énergie basse et charge élevée en moyenne sur trois jours.</p>
 <p><b>Les champs</b>, dans l'ordre : la grille affective, la faim, la nuit, le sport, l'alimentation, les autres, les réseaux, puis les notes.</p>
 <p><b>« Les autres »</b> note s'il y a eu des interactions d'au moins dix minutes, puis, pour chaque type d'interlocuteur séparément, s'il y en a eu et comment elles se sont passées — « Non » signifiant qu'il n'y en a pas eu. Le seuil de dix minutes n'est pas arbitraire : il vient de la méthode de référence en la matière, détaillée dans le Répertoire.</p>
-<p><b>L'alimentation</b> ne demande pas un jugement mais un décompte : à chaque repas, on coche les critères remplis (glucides, protéines, légumes, fruits, légumineuses, rassasié, maison, ultra-transformé), et la note d'un repas est le nombre de critères positifs cochés. Ne restent en questions du jour que le grignotage et — plus haut — la faim ressentie.</p>
+<p><b>L'alimentation</b> ne demande pas un jugement : à chaque repas, on coche simplement ce qu'il contenait (glucides, protéines, légumes, fruits, légumineuses, rassasié, maison, ultra-transformé). Aucune note par repas — c'est un relevé, exploité dans les Bilans (fréquences, et la carte Rassasiement). Ne restent en questions du jour que le grignotage et — plus haut — la faim ressentie.</p>
 <p><b>La grille affective</b> remplace les deux rangées humeur et énergie : un seul point à poser dans un plan. L'axe horizontal est la valence — agréable ou désagréable ; l'axe vertical est l'activation — excitée ou apaisée. Les quatre quadrants portent des noms, et « tendue » n'est pas « abattue ». Le Répertoire explique pourquoi ce plan vaut mieux que deux lignes.</p>
 <p><b>La nuit</b> reprend le noyau du journal de sommeil standard. Six saisies — dont trois horaires — et une note de qualité, dont le carnet tire le temps de sommeil, le temps au lit et l'efficacité. Le coucher et le réveil suffisent à tout calculer ; le reste affine.</p>
 <p style="padding:11px;background:var(--tint);border-radius:10px;font-size:13px">
@@ -3567,7 +3594,7 @@ Si le mode ordinateur est déjà décoché, recharge simplement une fois : Chrom
 <p>La référence est la <b>médiane</b> des semaines déjà remplies, pas leur moyenne : une semaine de vacances ou de grippe ne doit pas déplacer la référence de toutes les autres. Il en faut deux avant que la comparaison s'affiche.</p>
 <p><b>La semaine dans le plan</b> pose les sept jours dans l'espace valence × activation, reliés dans l'ordre, avec les quatre quadrants nommés en fond. On voit d'un coup si la semaine a tourné dans un coin ou traversé le plan — deux semaines de même moyenne peuvent avoir des trajets tout à fait différents. Le point plein est le dernier jour renseigné.</p>
 <p><b>Les 7 jours</b> montre le score de chaque jour, de 0 à 100, avec le ruban des phases dessous.</p>
-<p><b>Alimentation</b> et <b>Les autres</b> ventilent ce qu'une moyenne cache. « Repas 2,3 sur 6 » ne dit pas si c'est le petit-déjeuner qui traîne ou le dîner : une barre par repas, une barre par type d'interlocuteur, avec le chiffre au bout et le nombre de jours qui l'ont produit. Un type absent n'est pas un zéro — c'est une absence, et la barre reste vide.</p>
+<p><b>Alimentation</b> montre, pour la semaine, la <b>part des jours</b> où chaque critère est apparu — une barre par catégorie (glucides, protéines, légumes…). <b>Les autres</b> fait de même par type d'interlocuteur, avec le chiffre au bout et le nombre de jours qui l'ont produit. Un critère absent n'est pas un zéro : la barre reste vide.</p>
 <p>Si le poids est activé, un bloc <b>Poids et mensurations</b> s'ajoute ici : le <b>poids moyen</b> de la semaine (moins bruité qu'une seule pesée) et son <b>IMC</b>, puis les mensurations — tour de taille, hanches, cuisse, bras — avec l'écart de tour de taille par rapport à la semaine précédente. Le Répertoire détaille comment prendre chaque mesure et comment lire les seuils.</p>
 <p><b>Le PANAS</b> s'y remplit une fois par semaine : vingt mots, notés de 1 à 5, avec la consigne « au cours de la semaine écoulée ». Il en sort deux scores — affect positif et affect négatif — qui sont deux dimensions distinctes, et non les deux bouts d'une échelle. Chacun est comparé à <b>tes propres semaines</b>, jamais à une norme : « 40 sur 50 » ne veut rien dire tant qu'on ignore où tu te situes d'habitude.</p>
 <p>Les Bilans en tirent le reste : les deux courbes semaine après semaine, la question de savoir si <b>tes</b> deux échelles sont indépendantes, et surtout ce que chacune suit — les séances, le sommeil, les réseaux, les interactions.</p>
@@ -3847,8 +3874,8 @@ Ashwell M, Gunn P, Gibson S. « Waist-to-height ratio is a better screening tool
 <h4>Grignotage</h4>
 <p>Cette case remplace deux entrées antérieures — « distributeur du boulot » et « envies pressantes » — qui décrivaient le même phénomène sous deux angles : la prise alimentaire hors repas, souvent déclenchée par le contexte plutôt que par la faim. Une seule case suffit, et elle se coche plus vite.</p>
 <p>Ce qu'elle capture n'est ni une faiblesse ni un manque de volonté, mais un <b>signal contextuel</b>. Le grignotage se corrèle fréquemment au manque de sommeil, à une journée à faible apport protéique, à un stress élevé, ou à une phase donnée du cycle lorsqu'il y en a un. L'écran Bilans compare sa fréquence entre phases quand le cycle est suivi. C'est une observation, pas un verdict.</p>
-<h4>Ce qu'on note à chaque repas</h4>
-<p>Pas un jugement : un <b>décompte</b>. À chaque repas, on coche chaque critère qu'il remplit — plusieurs à la fois. Chacun porte une lettre :</p>
+<h4>Ce qu'on relève à chaque repas</h4>
+<p>Ni jugement, ni note : un <b>relevé</b>. À chaque repas, on coche ce qu'il contenait — plusieurs critères à la fois. Chacun porte une lettre :</p>
 <table class="scale-tbl">
 <tr><td><b>G</b></td><td>Glucides — pain, riz, pâtes, pomme de terre, céréales.</td></tr>
 <tr><td><b>P</b></td><td>Protéines — œuf, poisson, viande, fromage, yaourt, lait.</td></tr>
@@ -3859,17 +3886,15 @@ Ashwell M, Gunn P, Gibson S. « Waist-to-height ratio is a better screening tool
 <tr><td><b>m</b></td><td>Préparé maison.</td></tr>
 <tr><td><b>u</b></td><td>Ultra-transformé.</td></tr>
 </table>
-<p>La <b>note</b> d'un repas, c'est le nombre de critères <b>positifs</b> cochés — <b>G, P, L, F, Ln, r</b> — sur six. Les deux marqueurs restants ne sont pas des points : <b>u</b> (ultra-transformé) signale un défaut plutôt qu'une qualité, et <b>m</b> (maison) relève du contexte, pas de la valeur nutritionnelle. Le carnet les enregistre et les rend analysables, sans les faire entrer dans la note.</p>
-<p>Un plat avec protéines et légumineuses, mais industriel et qui laisse sur sa faim : <b>P</b>, <b>Ln</b> et <b>u</b> cochés → note <b>2</b>. Le même, fait maison et rassasiant : <b>P, Ln, r</b> plus le marqueur <b>m</b>, <b>u</b> décoché → note <b>3</b>.</p>
-<p><b>Deux remarques.</b> Recocher une lettre déjà active l'efface. Et sur un repas d'un ancien jour (noté à l'époque de 0 à 4), la première coche remplace l'ancien nombre par le nouveau détail.</p>
-<h4>Pourquoi compter plutôt que juger</h4>
-<p>Les critères positifs recouvrent plusieurs choses différentes : la variété (glucides, protéines, légumineuses, fruits) et la satiété. Elles ne se rangent pas les unes derrière les autres — un plat peut être varié et vite reparti, sobre et rassasiant.</p>
-<p>Une échelle qui demanderait de trancher entre elles — « équilibré » vaut-il plus ou moins que « fait maison » ? — poserait une question sans réponse, et deux journées identiques recevraient deux notes différentes selon l'humeur du moment.</p>
-<p>Compter supprime l'arbitrage. La note dit <b>combien de bonnes choses ce repas avait</b>, pas laquelle était la plus importante — question à laquelle ce carnet n'a pas à répondre.</p>
+<p><b>Pas de note.</b> Additionner ces critères en un score par repas — G + P + L + Ln + F… — reviendrait à supposer que plus de catégories fait un meilleur repas. C'est faux : l'équilibre est une propriété de la <b>journée</b>, pas de l'assiette. Légumes + protéines + rassasiée à midi est un très bon repas, et le noter « 3 sur 6 » comme s'il lui manquait quelque chose n'a aucun sens. Alors on ne note pas : on relève ce que le repas contenait, un point c'est tout.</p>
+<p>La valeur est ailleurs, dans les Bilans. La composition sert à voir <b>ce qu'on mange</b> et à le croiser avec le reste — en particulier avec le rassasiement, qui est bien plus intéressant comme résultat que comme point : la vraie question, c'est « quelles compositions me laissent rassasiée ? ».</p>
+<p>Cocher une lettre déjà active l'efface. Sur un repas d'un ancien jour (noté à l'époque de 0 à 4), la première coche remplace l'ancien nombre par le détail.</p>
 <h4>Préparé maison</h4>
-<p>Le marqueur <b>M</b> ne juge pas la qualité — un plat maison peut être déséquilibré, un plat acheté peut être excellent. Il capture autre chose : le <b>temps et l'attention</b> consacrés à un repas, dont on peut faire l'hypothèse qu'ils se relient à d'autres choses. C'est pourquoi il reste un marqueur, hors de la note, tout en étant disponible dans Explorer ; le carnet n'en présume rien.</p>
+<p>Le marqueur <b>m</b> ne juge pas la qualité — un plat maison peut être déséquilibré, un plat acheté peut être excellent. Il capture autre chose : le <b>temps et l'attention</b> consacrés à un repas, dont on peut faire l'hypothèse qu'ils se relient à d'autres choses. Comme tout le reste ici, c'est un descripteur qu'on corrèle, pas un point ; le carnet n'en présume rien.</p>
 <h4>Les analyser dans l'explorateur</h4>
-<p>Chaque critère devient une variable des Bilans. Comme <b>issue</b>, tu lis sa fréquence — la part de jours avec des légumes, des fruits, des protéines, etc. Comme <b>prédicteur</b>, tu testes son influence sur autre chose : les fruits sur le sommeil, les protéines sur l'énergie, les légumineuses sur la satiété. Ce sont des liens jour à jour ; l'explorateur ne propose une paire que lorsqu'assez de jours sont renseignés des deux côtés. Les critères saisis avant ce changement (jours notés à l'ancienne) n'ont pas le détail par catégorie : ils restent muets pour ces variables-là, sans fausser les jours récents.</p>
+<p>Deux endroits, deux grains. Dans l'<b>explorateur</b>, chaque critère est une variable <b>au niveau du jour</b> : comme issue, la part de jours avec des légumes, des fruits… ; comme prédicteur, son influence sur autre chose — les fruits sur le sommeil, les protéines sur l'énergie. L'explorateur ne propose une paire que lorsqu'assez de jours sont renseignés des deux côtés.</p>
+<p>La carte <b>Rassasiement</b>, elle, travaille <b>au niveau du repas</b> : pour chaque critère, elle compare la part de repas rassasiants (r coché) selon qu'ils contenaient ou non ce critère — « repas avec protéines : rassasiée 78&nbsp;% ; sans : 45&nbsp;% ». C'est volontairement séparé de l'explorateur : mélanger un critère de repas avec le sommeil de la nuit fabriquerait des paires qui n'ont pas de sens. Les effectifs sont affichés des deux côtés.</p>
+<p>Les repas saisis avant ce changement (jours notés à l'ancienne) n'ont pas le détail par catégorie : ils restent muets pour ces analyses, sans fausser les jours récents.</p>
 <div class="ref">
 Monteiro CA, Cannon G, Levy RB, Moubarac JC, Louzada ML, Rauber F, Khandpur N, Cediel G, Neri D, Martinez-Steele E, Baraldi LG, Jaime PC. « Ultra-processed foods: what they are and how to identify them. » <em>Public Health Nutrition</em>, 2019;22(5):936–941. doi:10.1017/S1368980018003762
 </div>`},
@@ -3998,7 +4023,6 @@ Carney CE, Buysse DJ, Ancoli-Israel S, Edinger JD, Krystal AD, Lichstein KL, Mor
 <tr><td style="width:auto;color:var(--ink)">Latence d'endormissement</td><td>En minutes. Le temps mis à s'endormir.</td></tr>
 <tr><td style="width:auto;color:var(--ink)">Éveils nocturnes</td><td>En minutes. Le temps passé éveillée entre l'endormissement et le réveil final.</td></tr>
 <tr><td style="width:auto;color:var(--ink)">Qualité de la nuit</td><td>De 1 à 5. Ce qu'on en a ressenti, indépendamment de ce que les horaires disent.</td></tr>
-<tr><td style="width:auto;color:var(--ink)">Qualité des repas</td><td>De 0 à 6, moyennée sur les repas du jour. Le nombre de critères positifs remplis (glucides, protéines, légumes, fruits, légumineuses, rassasié), pas un jugement.</td></tr>
 <tr><td style="width:auto;color:var(--ink)">Glucides, protéines, légumes, fruits, légumineuses, repas rassasiants</td><td>0 ou 1 par jour selon qu'un repas au moins coche le critère. En moyenne sur un groupe de jours, cela devient une part : « 60 % des jours ». Chacun est aussi une catégorie (« des légumes » / « pas de légumes ») utilisable avant « joue sur ».</td></tr>
 <tr><td style="width:auto;color:var(--ink)">Pas</td><td>Le décompte du jour.</td></tr>
 <tr><td style="width:auto;color:var(--ink)">Distance parcourue</td><td>En kilomètres, toutes activités confondues.</td></tr>
