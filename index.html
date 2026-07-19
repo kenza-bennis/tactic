@@ -236,6 +236,11 @@ input[type=range]::-moz-range-thumb{
 .seg button:hover{border-color:var(--ink-3)}
 .seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .seg.mini button{font-size:12px;padding:6px 2px;min-height:34px}
+.mchip{width:30px;min-height:32px;padding:0;border:1px solid var(--line-2);border-radius:var(--r-sm);
+  font-size:13px;font-weight:600;color:var(--ink-2);background:var(--paper-2);transition:.14s;font-family:var(--fm);cursor:pointer}
+.mchip:hover{border-color:var(--ink-3)}
+.mchip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.mchip.flag[aria-pressed="true"]{background:var(--period);border-color:var(--period);color:#fff}
 
 /* Grille affective — le plan valence × activation de Russell */
 .ag-wrap{display:grid;grid-template-columns:14px 1fr;grid-template-rows:1fr 14px;gap:5px;max-width:250px;margin:2px auto 0}
@@ -687,7 +692,7 @@ summary.acc-h::-webkit-details-marker{display:none}
     <h2 class="sec">Alimentation</h2>
     <div class="card">
       <div class="field" style="padding-top:2px">
-        <div class="field-h"><label>Qualité des repas</label><span class="hint">combien de critères ?</span></div>
+        <div class="field-h"><label>Composition des repas</label><span class="hint">coche les critères remplis</span></div>
         <div id="meals"></div>
         <div class="note" style="padding-top:10px;margin-top:8px" id="mealNote"></div>
       </div>
@@ -700,11 +705,9 @@ summary.acc-h::-webkit-details-marker{display:none}
         </div>
       </div>
       <div class="field">
-        <div class="grid2">
-          <div><label class="lbl">Source de protéines</label><div class="seg mini" data-yn="protein"><button data-v="1">Oui</button><button data-v="0">Non</button></div></div>
-          <div><label class="lbl">Ultra-transformé</label><div class="seg mini" data-yn="ultra"><button data-v="1">Oui</button><button data-v="0">Non</button></div></div>
-          <div><label class="lbl">Grignotage</label><div class="seg mini" data-yn="snacking"><button data-v="1">Oui</button><button data-v="0">Non</button></div></div>
-          <div><label class="lbl">Préparé maison</label><div class="seg mini" data-yn="homemade"><button data-v="1">Oui</button><button data-v="0">Non</button></div></div>
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+          <div><label class="lbl">Grignotage</label><div class="seg mini" data-yn="snacking" style="width:150px"><button data-v="1">Oui</button><button data-v="0">Non</button></div></div>
+          <div style="flex:1;min-width:150px"><label class="lbl">Quoi&nbsp;?</label><input type="text" id="fSnackNote" placeholder="ce qu'on a grignoté" maxlength="120"></div>
         </div>
       </div>
     </div>
@@ -747,6 +750,7 @@ summary.acc-h::-webkit-details-marker{display:none}
             <input type="number" id="fWeight" inputmode="decimal" step="0.1" min="20" max="300" placeholder="kg">
             <button data-step="weight" data-by="0.1" aria-label="Ajouter 100 grammes">+</button>
           </div>
+          <div id="bmiDay" class="hide" style="margin-top:11px;padding:10px 11px;background:var(--tint);border-radius:10px;font-size:13px"></div>
           <div class="note" style="border:none;padding-top:9px;margin-top:6px">Un poids isolé, c'est surtout de l'eau. C'est la moyenne sur 7 jours, dans Bilans, qui a du sens.</div>
         </div>
       </div>
@@ -796,15 +800,18 @@ summary.acc-h::-webkit-details-marker{display:none}
   </div>
 
   <div id="weightWeek" class="hide">
-    <h2 class="sec">Mensurations</h2>
+    <h2 class="sec">Poids et mensurations</h2>
+    <div class="card" id="wBodyStat"></div>
     <div class="card">
+      <div class="card-h" style="margin-bottom:10px">Mensurations <span class="r">cm</span></div>
       <div class="grid3">
-        <div><label class="lbl">Taille</label><input type="number" inputmode="decimal" step="0.5" data-wk="waist" placeholder="cm"></div>
+        <div><label class="lbl">Tour de taille</label><input type="number" inputmode="decimal" step="0.5" data-wk="waist" placeholder="cm"></div>
         <div><label class="lbl">Hanches</label><input type="number" inputmode="decimal" step="0.5" data-wk="hips" placeholder="cm"></div>
         <div><label class="lbl">Cuisse</label><input type="number" inputmode="decimal" step="0.5" data-wk="thigh" placeholder="cm"></div>
       </div>
-      <div style="margin-top:10px"><label class="lbl">Bras</label><input type="number" inputmode="decimal" step="0.5" data-wk="arm" placeholder="cm"></div>
+      <div style="margin-top:10px"><label class="lbl">Bras (biceps)</label><input type="number" inputmode="decimal" step="0.5" data-wk="arm" placeholder="cm"></div>
       <div class="note" id="waistDelta"></div>
+      <div class="note" style="margin-top:6px;border:none;padding-top:0">Comment prendre chaque mesure, et comment lire les seuils : voir le Répertoire.</div>
     </div>
   </div>
 
@@ -946,6 +953,7 @@ summary.acc-h::-webkit-details-marker{display:none}
     <h2 class="sec">Ce que tu suis</h2>
     <div class="card">
       <div class="set"><div class="t"><b>Poids et mensurations</b><span>Masqués par défaut. Le reste marche sans.</span></div><div class="c"><button class="sw" id="swBody" role="switch" aria-checked="false"></button></div></div>
+      <div id="setBodyProfile" class="hide"><div class="set"><div class="t"><b>Ta taille (hauteur)</b><span>Saisie une fois. Sert au calcul de l'IMC.</span></div><div class="c"><input type="number" id="setHeight" inputmode="decimal" step="0.5" min="120" max="230" placeholder="cm" style="width:92px"></div></div></div>
       <div class="set"><div class="t"><b>Réseaux sociaux</b><span>Temps par application, saisi à la main.</span></div><div class="c"><button class="sw" id="swSocial" role="switch" aria-checked="true"></button></div></div>
       <div class="set"><div class="t"><b>Je suis</b><span>Pilote peu de chose — le Répertoire dit quoi.</span></div><div class="c">
         <select id="selSex" style="width:auto;min-width:110px;text-align:left">
@@ -1090,6 +1098,24 @@ const fnum=(n,d=2)=>{
   if(v.includes('.')) v=v.replace(/0+$/,'').replace(/\.$/,'');
   return v.replace('.',',');
 };
+
+/* IMC — repère de population, pas un diagnostic. Seuils OMS (TRS 894). */
+function bmi(w,h){ if(!isNum(w)||!isNum(h)||num(h)<=0) return null; return num(w)/Math.pow(num(h)/100,2); }
+function bmiCat(b){
+  if(b===null) return null;
+  if(b<18.5)  return {lab:'maigreur',           note:'sous 18,5'};
+  if(b<25)    return {lab:'corpulence normale',  note:'18,5 à 24,9'};
+  if(b<30)    return {lab:'surpoids',            note:'25 à 29,9'};
+  return                {lab:'obésité',            note:'30 et plus'};
+}
+/* Tour de taille : seuils OMS (origine européenne). Renvoie le niveau de risque. */
+function waistLevel(cm,sex){
+  if(!isNum(cm)) return null;
+  const v=num(cm), hi=sex==='m'?102:88, mid=sex==='m'?94:80;
+  if(v>=hi)  return {lab:'nettement accru', tier:2};
+  if(v>=mid) return {lab:'accru',           tier:1};
+  return                {lab:'bas',              tier:0};
+}
 
 const D_MS=86400000;
 const dt=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d,12,0,0);};
@@ -1311,11 +1337,11 @@ const Store={
    Elle s'affiche dans Réglages → Tes données. */
 const BUILD='2026-07-17o';
 const DEF={
-  version:13,
+  version:16,
   settings:{
     showBody:false, showSocial:true, analytics:true, sex:'f', situation:'cycles', theme:'auto',
     socialApps:['Instagram','YouTube','Facebook','Substack'],
-    dueDate:'', birthDate:'', breastfeeding:false,
+    dueDate:'', birthDate:'', breastfeeding:false, height:null,
     periodLen:5, cycleLen:28,
     thresholds:{steps:10000, water:2.5, sleep:7.5, load:150},
     weights:{session:30, steps:20, water:15, protein:15, ultra:10, snacking:10, sleep:10, load:10},
@@ -1335,7 +1361,7 @@ const blank=()=>({sleep:null,energy:null,mood:null,hunger:null,phase:null,period
   sd:{bed:'',sol:null,nwak:null,waso:null,wake:'',rise:'',qual:null},
   sessions:[],upper:null,lower:null,steps:null,km:null,water:null,
   meals:{breakfast:null,lunch:null,snack:null,dinner:null},
-  protein:null,ultra:null,snacking:null,homemade:null,weight:null,social:{},
+  snacking:null,snackNote:'',weight:null,social:{},
   si:{had:null,work:null,friends:null,family:null,acq:null,strangers:null},
   na:false,notes:''});
 
@@ -1356,7 +1382,7 @@ function hasEntry(d){
   if(d.sessions&&d.sessions.length) return true;
   if(d.social&&Object.values(d.social).some(v=>num(v)>0)) return true;
   if(d.meals&&Object.values(d.meals).some(v=>v!==null)) return true;
-  if(['protein','ultra','snacking','homemade','upper','lower'].some(k=>d[k]!==null)) return true;
+  if(['protein','ultra','snacking','homemade','upper','lower'].some(k=>d[k]!=null)) return true;
   if(d.si&&(d.si.had!==null||SIK.some(k=>isNum(d.si[k])))) return true;
   if(d.periodStart||d.periodEnd) return true;
   if(d.notes&&d.notes.trim()) return true;
@@ -1386,6 +1412,7 @@ function normalize(o){
   delete out.settings.cycle; delete out.settings.cycleEnabled;
   out.settings.breastfeeding = !!out.settings.breastfeeding;
   ['dueDate','birthDate'].forEach(k=>{ if(typeof out.settings[k]!=='string') out.settings[k]=''; });
+  out.settings.height = (isNum(out.settings.height)&&num(out.settings.height)>=120&&num(out.settings.height)<=230) ? num(out.settings.height) : null;
   let sp=out.settings.sports;
   if(!Array.isArray(out.settings.socialApps)||!out.settings.socialApps.length)
     out.settings.socialApps=clone(DEF.settings.socialApps);
@@ -1414,6 +1441,9 @@ function normalize(o){
     delete d.workFood; delete d.cravings;
     d.sessions=(d.sessions||[]).map(x=>({type:String(x.type??''),min:isNum(x.min)?+x.min:null,rpe:isNum(x.rpe)?+x.rpe:null,dist:isNum(x.dist)?+x.dist:null}));
     d.meals=Object.assign({breakfast:null,lunch:null,snack:null,dinner:null},d.meals||{});
+    ['breakfast','lunch','snack','dinner'].forEach(mk=>{ const mv=d.meals[mk];
+      if(mv&&typeof mv==='object'){ const o={}; Object.keys(mv).forEach(c=>{ const nc=MMIGR[c]||c; if(mv[c]&&MCLAB[nc]) o[nc]=1; }); d.meals[mk]=o; } });
+    d.snackNote = (typeof d.snackNote==='string') ? d.snackNote : '';
     d.sd=Object.assign({bed:'',sol:null,nwak:null,waso:null,wake:'',rise:'',qual:null},d.sd||{});
     /* v10 → v11 : chaque interlocuteur portait un booléen et tous partageaient une note.
        Chacun porte désormais la sienne : 0 = pas d'interaction, 1 à 5 = sa qualité. */
@@ -1648,9 +1678,9 @@ function parts(d){
     {k:WLAB.session,  hit:sessCount(d)>=1,       p:num(W.session), v:sessCount(d)+' séance'+(sessCount(d)>1?'s':'')},
     {k:WLAB.steps,    hit:num(d.steps)>=T.steps, p:num(W.steps),   v:isNum(d.steps)?fi(d.steps):'—'},
     {k:WLAB.water,    hit:num(d.water)>=T.water, p:num(W.water),   v:isNum(d.water)?fnum(d.water,2)+' L':'—'},
-    {k:WLAB.protein,  hit:d.protein===1,         p:num(W.protein), v:y(d.protein)},
+    {k:WLAB.protein,  hit:hasProtein(d)===true,  p:num(W.protein), v:y(hasProtein(d))},
     ...(R?[]:[
-      {k:WLAB.ultra,    hit:d.ultra===0,         p:num(W.ultra),    v:y(d.ultra)},
+      {k:WLAB.ultra,    hit:hasUltra(d)===false, p:num(W.ultra),    v:y(hasUltra(d))},
       {k:WLAB.snacking, hit:d.snacking===0,      p:num(W.snacking), v:y(d.snacking)}
     ]),
     {k:WLAB.sleep,    hit:num(d.sleep)>=T.sleep, p:num(W.sleep),   v:isNum(d.sleep)?fnum(d.sleep,2)+' h':'—'},
@@ -1828,6 +1858,7 @@ function renderDay(){
   $('#vWater').textContent = isNum(d.water)?fnum(num(d.water),2)+' L':'—';
   $('#fWeight').value = isNum(d.weight)?d.weight:'';
   $('#vWeight').textContent = isNum(d.weight)?fx(num(d.weight),1)+' kg':'—';
+  renderBmiDay(d);
   renderMeals(d);
   renderSI(d);
   renderSocial(d);
@@ -1837,10 +1868,28 @@ function renderDay(){
     $$('button',g).forEach(b=>b.setAttribute('aria-pressed', d[k]!==null&&d[k]===+b.dataset.v ? 'true':'false'));
   });
   $('#fNotes').value = d.notes||'';
+  $('#fSnackNote').value = d.snackNote||'';
   $('#welcome').classList.toggle('hide', loggedDates().length>0);
   $('#weightDay').classList.toggle('hide', !S().showBody);
   $('#dialCard').classList.toggle('hide', SIT()==='none');
   syncPhSeg(d);
+}
+function renderBmiDay(d){
+  const el=$('#bmiDay');
+  if(!S().showBody){ el.classList.add('hide'); return; }
+  el.classList.remove('hide');
+  const h=S().height;
+  if(!isNum(h)){
+    el.innerHTML='<b>IMC</b> — renseigne ta taille dans les réglages (roue dentée) pour l\u2019afficher.';
+    return;
+  }
+  if(!isNum(d.weight)){
+    el.innerHTML=`<b>IMC</b> — saisis ton poids pour l\u2019obtenir. Taille enregistrée : ${fx(num(h),0)} cm.`;
+    return;
+  }
+  const b=bmi(d.weight,h), c=bmiCat(b);
+  el.innerHTML=`<b>IMC ${fx(b,1)}</b> · ${c.lab} <span style="color:var(--ink-3)">(${c.note})</span>`
+    +`<div style="margin-top:5px;color:var(--ink-3);line-height:1.45">Sur un poids du jour, donc bruité. L\u2019IMC ne distingue pas le muscle de la graisse : si tu es musclée, il te surestime. Le tour de taille (écran Semaine) est plus fiable. Repère, pas diagnostic.</div>`;
 }
 const ENERGY={1:'très basse',2:'basse',3:'stable',4:'haute',5:'très haute'};
 const MOOD={1:'très basse',2:'fragile',3:'neutre',4:'positive',5:'très positive'};
@@ -1979,11 +2028,40 @@ function scale(sel,k,v,sub){
 const MEALK=[['breakfast','Petit-déjeuner'],['lunch','Déjeuner'],['snack','Collation'],['dinner','Dîner']];
 /* On compte, on ne juge pas. Quatre critères observables, la note = combien sont remplis.
    Aucune ambiguïté sur le chiffre à choisir : il suffit de compter. */
-const MEALC=['une source de protéines',
-             'des légumes ou des fruits',
-             'rien d\u2019ultra-transformé',
-             'de quoi tenir jusqu\u2019au repas suivant'];
-const MEALQ={0:'aucun des quatre',1:'un sur quatre',2:'deux sur quatre',3:'trois sur quatre',4:'les quatre'};
+/* Critères cochables à chaque repas. G,P,L,F,Ln,r comptent dans la note (MPOS) ;
+   m (maison) et u (ultra-transformé) sont des marqueurs, enregistrés mais hors note.
+   MMIGR remappe l'ancien jeu de lettres (a,b,c,d,R,M) vers le nouveau. */
+const MCRIT=[['G','Glucides'],['P','Protéines'],['L','Légumes'],['F','Fruits'],
+             ['Ln','Légumineuses'],['r','Rassasié'],['m','Maison'],['u','Ultra-transformé']];
+const MCLAB=Object.fromEntries(MCRIT);
+const MPOS=['G','P','L','F','Ln','r'];   // critères positifs comptés dans la note (0 à 6)
+const MFLAG={u:1};                        // marqueur négatif (style distinct)
+const MMIGR={a:'G',b:'P',c:'Ln',d:'F',R:'r',M:'m'};   // ancien jeu de lettres → nouveau
+const MEX={
+  G:'pain, riz, pâtes, pomme de terre, céréales\u2026',
+  P:'\u0153uf, poisson, viande, fromage, yaourt, lait\u2026',
+  L:'salade, courgette, carotte, tomate, épinards\u2026',
+  F:'pomme, banane, orange, fruits rouges\u2026',
+  Ln:'lentilles, pois chiches, haricots, fèves\u2026',
+  r:'de quoi tenir jusqu\u2019au repas suivant',
+  m:'préparé soi-même plutôt qu\u2019acheté prêt',
+  u:'plats préparés, sodas, biscuits, snacks industriels\u2026'
+};
+function mObj(d,k){ const m=d.meals&&d.meals[k]; return (m&&typeof m==='object')?m:null; }
+function mCount(d,k){ const m=d.meals&&d.meals[k]; if(m===null||m===undefined) return null;
+  return (typeof m==='object') ? MPOS.reduce((t,x)=>t+(m[x]?1:0),0) : num(m); }
+function mealsMean(d){ const v=MEALK.map(([k])=>mCount(d,k)).filter(x=>x!==null); return v.length?mean(v):null; }
+/* Présence d'un critère sur la journée : vrai si un repas le coche, faux si des repas
+   sont renseignés sans lui, null si aucun repas détaillé. Repli sur les anciens champs. */
+function anyMealCrit(d,x){ let seen=false;
+  for(const [k] of MEALK){ const o=mObj(d,k); if(o){ seen=true; if(o[x]) return true; } }
+  return seen?false:null; }
+function hasProtein(d){ const v=anyMealCrit(d,'P'); return v!==null?v:(d.protein==null?null:d.protein===1); }
+function hasUltra(d){   const v=anyMealCrit(d,'u'); return v!==null?v:(d.ultra==null?null:d.ultra===1); }
+function hasHome(d){    const v=anyMealCrit(d,'m'); return v!==null?v:(d.homemade==null?null:d.homemade===1); }
+function mCSV(d,k){ const m=d.meals&&d.meals[k]; if(m===null||m===undefined) return '';
+  return (typeof m==='object') ? MCRIT.map(([c])=>c).filter(c=>m[c]).join('') : String(m); }
+function mRate(d,x){ const v=anyMealCrit(d,x); return v===null?null:(v?1:0); }
 function renderGrid(d){
   const g=$('#agrid');
   if(!g.dataset.built){
@@ -2121,25 +2199,34 @@ function renderSocial(d){
 function renderMeals(d){
   const w=$('#meals');
   if(!w.dataset.built){
-    w.innerHTML=MEALK.map(([k,l])=>`<div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">
-      <span style="flex:1;min-width:0;font-size:13px;color:var(--ink-2)">${l}</span>
-      <div class="seg mini" data-meal="${k}" style="flex:0 0 168px">
-        ${[0,1,2,3,4].map(n=>`<button data-v="${n}" title="${esc(MEALQ[n])}">${n}</button>`).join('')}
-      </div></div>`).join('');
+    w.innerHTML=MEALK.map(([k,l])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="flex:0 0 88px;min-width:0;font-size:13px;color:var(--ink-2)">${l}</span>
+      <div data-meal="${k}" style="display:flex;flex-wrap:wrap;gap:4px;flex:1">
+        ${MCRIT.map(([c,lab])=>`<button class="mchip${MFLAG[c]?' flag':''}" data-c="${c}" title="${esc(lab)}" aria-label="${esc(lab)}">${c}</button>`).join('')}
+      </div>
+      <span class="num" data-mc="${k}" style="flex:0 0 30px;text-align:right;color:var(--ink-3);font-size:12px"></span>
+    </div>`).join('');
     w.dataset.built='1';
     w.addEventListener('click',e=>{
-      const b=e.target.closest('button'); if(!b) return;
-      const k=b.closest('[data-meal]').dataset.meal, n=+b.dataset.v;
+      const b=e.target.closest('button[data-c]'); if(!b) return;
+      const k=b.closest('[data-meal]').dataset.meal, c=b.dataset.c;
       const dd=day(curDay,true);
-      dd.meals[k]= dd.meals[k]===n ? null : n;
+      let m=dd.meals[k]; if(!m||typeof m!=='object') m={};   // un ancien nombre est remplacé à la première coche
+      if(m[c]) delete m[c]; else m[c]=1;
+      dd.meals[k]=m;
       save(); renderDay();
     });
   }
-  $('#mealNote').innerHTML = '<b>Compte les critères remplis, de 0 à 4 :</b><br>'
-    + MEALC.map(c=>'· '+c).join('<br>');
+  $('#mealNote').innerHTML = '<b>Coche à chaque repas chaque critère qu\u2019il remplit. La note du repas = le nombre de critères comptés (G·P·L·F·Ln·r) :</b>'
+    + '<div style="margin-top:6px;display:grid;gap:3px">'
+    + MCRIT.map(([c,lab])=>`<div><b>${c}</b> ${lab.toLowerCase()} <span style="color:var(--ink-3)">\u2014 ${MEX[c]}</span></div>`).join('')
+    + '</div>'
+    + '<div style="color:var(--ink-3);margin-top:6px"><b>m</b> (maison) et <b>u</b> (ultra-transformé) sont notés, mais ne comptent pas dans la note.</div>';
   $$('[data-meal]',w).forEach(g=>{
-    const k=g.dataset.meal;
-    $$('button',g).forEach(b=>b.setAttribute('aria-pressed', d.meals[k]!==null&&d.meals[k]===+b.dataset.v?'true':'false'));
+    const k=g.dataset.meal, m=mObj(d,k);
+    $$('button[data-c]',g).forEach(b=>b.setAttribute('aria-pressed', m&&m[b.dataset.c]?'true':'false'));
+    const badge=$(`[data-mc="${k}"]`);
+    if(badge) badge.textContent = m ? (mCount(d,k)+'/'+MPOS.length) : (isNum(d.meals[k]) ? d.meals[k]+'/4' : '');
   });
 }
 function renderSess(d){
@@ -2210,7 +2297,7 @@ function weekHist(m){
     const ef=days.map(d=>{const c=sleepCalc(d); return (c&&!c.bad)?c.se:null;}).filter(v=>v!==null);
     const st=days.filter(d=>isNum(d.steps)).map(d=>num(d.steps));
     const so=days.filter(d=>socialTotal(d)>0).map(socialTotal);
-    const me=days.map(d=>{const v=Object.values(d.meals).filter(x=>x!==null); return v.length?mean(v):null;}).filter(v=>v!==null);
+    const me=days.map(d=>mealsMean(d)).filter(v=>v!==null);
     const iq=days.map(d=>siMean(d)).filter(v=>v!==null);
     if(me.length) out.meals.push(mean(me));
     if(iq.length) out.si.push(mean(iq));
@@ -2262,7 +2349,7 @@ function renderWGrid(ds){
   $('#wGridNote').innerHTML = (top?`<b>${QUAD[top]}</b> ${qs[top]} jour${qs[top]>1?'s':''} sur ${pts.length}. `:'')
     + `Le point plein est le dernier jour renseigné ; le trait suit l'ordre des jours. Une semaine qui reste dans un coin et une semaine qui traverse le plan peuvent avoir la même moyenne.`;
 }
-/* Une moyenne unique cache d'où elle vient : « repas 2,7/4 » ne dit pas si c'est le
+/* Une moyenne unique cache d'où elle vient : « repas 2,7/6 » ne dit pas si c'est le
    petit-déjeuner qui traîne ou le dîner. On ventile, en barres, avec le chiffre au bout. */
 function wBars(sel, rows, max, fmt, vide){
   const el=$(sel);
@@ -2279,20 +2366,19 @@ function wBars(sel, rows, max, fmt, vide){
 }
 function renderWMeals(ds){
   const rows=MEALK.map(([k,l])=>{
-    const v=ds.map(x=>{const d=DB.days[x]; return (d&&!d.na&&d.meals[k]!==null)?num(d.meals[k]):null;}).filter(y=>y!==null);
+    const v=ds.map(x=>{const d=DB.days[x]; return (d&&!d.na)?mCount(d,k):null;}).filter(y=>y!==null);
     return {l, v:v.length?mean(v):0, n:v.length};
   });
-  wBars('#wMeals', rows, 4, v=>fx(v,1),
-    'Note la qualité de tes repas depuis l\u2019écran Aujourd\u2019hui, et la ventilation apparaîtra ici.');
+  wBars('#wMeals', rows, MPOS.length, v=>fx(v,1),
+    'Coche les critères de tes repas depuis l\u2019écran Aujourd\u2019hui, et la ventilation apparaîtra ici.');
   const all=rows.filter(r=>r.n>0);
   if(all.length){
-    const tot=ds.map(x=>{const d=DB.days[x]; if(!d||d.na) return null;
-      const v=Object.values(d.meals).filter(y=>y!==null); return v.length?mean(v):null;}).filter(y=>y!==null);
+    const tot=ds.map(x=>{const d=DB.days[x]; return (d&&!d.na)?mealsMean(d):null;}).filter(y=>y!==null);
     const best=[...all].sort((a,b)=>b.v-a.v)[0], worst=[...all].sort((a,b)=>a.v-b.v)[0];
     $('#wMeals').insertAdjacentHTML('beforeend',
-      `<div class="note">Moyenne de la semaine : <b>${fx(mean(tot),1)}/4</b>.${
+      `<div class="note">Moyenne de la semaine : <b>${fx(mean(tot),1)}/${MPOS.length}</b>.${
         all.length>1?` C'est <b>${esc(best.l.toLowerCase())}</b> qui coche le plus de critères, <b>${esc(worst.l.toLowerCase())}</b> le moins.`:''
-      } Chaque note est un décompte sur quatre critères, pas un jugement — le Répertoire les liste.</div>`);
+      } Chaque note est un décompte de critères positifs, pas un jugement — le Répertoire les liste.</div>`);
   }
 }
 function renderWSI(ds){
@@ -2341,8 +2427,7 @@ function renderWeek(){
   const eff=ds.map(x=>{const c=sleepCalc(DB.days[x]||{}); return (c&&!c.bad)?c.se:null;}).filter(v=>v!==null);
   /* La table et les autres manquaient : deux pans entiers du carnet dont la semaine
      ne disait rien, alors qu'on les renseigne tous les jours. */
-  const me=ds.map(x=>{const d=DB.days[x]; if(!d||d.na) return null;
-    const v=Object.values(d.meals).filter(y=>y!==null); return v.length?mean(v):null;}).filter(v=>v!==null);
+  const me=ds.map(x=>{const d=DB.days[x]; return (d&&!d.na)?mealsMean(d):null;}).filter(v=>v!==null);
   const siQ=ds.map(x=>siMean(DB.days[x]||{})).filter(v=>v!==null);
   const siT=ds.map(x=>{const d=DB.days[x]; return (d&&!d.na&&d.si.had!==null)?siCount(d):null;}).filter(v=>v!==null);
   /* Un indicateur qui s'efface faute de donnée est indiscernable d'un indicateur qui
@@ -2394,7 +2479,34 @@ function renderWeek(){
     $('#waistDelta').textContent = (isNum(cw)&&isNum(pw))
       ? `Tour de taille : ${num(cw)-num(pw)>0?'+':''}${fx(num(cw)-num(pw),1)} cm par rapport à la semaine dernière.`
       : 'Renseigne deux semaines de suite pour voir l\u2019écart.';
+    renderWBody(ds, wk);
   }
+}
+function renderWBody(ds, wk){
+  const el=$('#wBodyStat'); if(!el) return;
+  const ws=ds.map(s=>DB.days[s]).filter(d=>d&&!d.na&&isNum(d.weight)).map(d=>num(d.weight));
+  const avg=mean(ws), h=S().height;
+  let html='<div class="card-h" style="margin-bottom:8px">Poids <span class="r">moyenne de la semaine</span></div>';
+  if(avg===null){
+    html+='<div class="note" style="border:none;padding-top:0;margin-top:0">Aucune pesée cette semaine. Le poids se saisit sur l\u2019écran Aujourd\u2019hui.</div>';
+    el.innerHTML=html; return;
+  }
+  html+=`<div style="font-family:var(--fm);font-size:22px;font-weight:600;color:var(--accent)">${fx(avg,1)} kg</div>`
+      +`<div class="note" style="border:none;padding-top:4px;margin-top:0">Moyenne de ${ws.length} pesée${ws.length>1?'s':''} — moins bruitée qu\u2019un seul jour.</div>`;
+  if(isNum(h)){
+    const b=bmi(avg,h), c=bmiCat(b);
+    html+=`<div style="margin-top:9px;padding:9px 11px;background:var(--tint);border-radius:10px;font-size:13px"><b>IMC ${fx(b,1)}</b> · ${c.lab} <span style="color:var(--ink-3)">(${c.note})</span>`;
+    if(isNum(wk.waist)){
+      const r=num(wk.waist)/num(h), lvl=waistLevel(wk.waist,S().sex);
+      html+=`<div style="margin-top:5px;color:var(--ink-3);line-height:1.45">Tour de taille ${fx(num(wk.waist),1)} cm — risque ${lvl.lab}. Rapport tour de taille / hauteur : ${fx(r,2)} <span>(repère simple : rester sous 0,50)</span>.</div>`;
+    } else {
+      html+='<div style="margin-top:5px;color:var(--ink-3);line-height:1.45">Renseigne le tour de taille ci-dessous : c\u2019est le meilleur repère de santé, plus fiable que l\u2019IMC.</div>';
+    }
+    html+='</div>';
+  } else {
+    html+='<div class="note" style="margin-top:8px">Renseigne ta taille dans les réglages pour voir l\u2019IMC.</div>';
+  }
+  el.innerHTML=html;
 }
 
 /* ═══ STATS SCREEN ══════════════════════════════════════ */
@@ -2404,6 +2516,7 @@ function renderWeek(){
 function answer(q){
   const O=OUT[q.c1];
   if(!O) return '<div class="empty" style="padding:12px">Cette variable n\u2019existe plus.</div>';
+  const UJ=O.weekly?'semaine':'jour';
   const W=300, few='<div class="empty" style="padding:12px">Pas encore assez de jours renseignés pour répondre.</div>';
 
   if(q.q==='dist'){
@@ -2415,7 +2528,7 @@ function answer(q){
     v.forEach(x=>bins[Math.min(B-1,Math.floor((x-lo)/span*B))]++);
     const mx=Math.max(...bins), H=64;
     const g=bins.map((c,i)=>`<rect x="${(i*(W/B)+1).toFixed(1)}" y="${(H-(c/mx)*(H-6)).toFixed(1)}" width="${(W/B-2).toFixed(1)}" height="${((c/mx)*(H-6)).toFixed(1)}" rx="1.5" fill="${cssv('--accent')}" opacity=".75"/>`).join('');
-    return `<p style="font-size:13.5px;margin:0 0 8px">Sur <b>${n} jours</b>, ${O.l.toLowerCase()} tourne autour de <b>${O.fmt(md)}</b>.
+    return `<p style="font-size:13.5px;margin:0 0 8px">Sur <b>${n} ${UJ}s</b>, ${O.l.toLowerCase()} tourne autour de <b>${O.fmt(md)}</b>.
       Une journée sur deux tombe entre <b>${O.fmt(q1)}</b> et <b>${O.fmt(q3)}</b> ; le reste s'étale de ${O.fmt(lo)} à ${O.fmt(hi)}.</p>
       <svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:${H}px">${g}</svg>
       <div class="lkp-lab"><span>${O.fmt(lo)}</span><span style="color:var(--ink-3)">chaque barre = un intervalle de valeurs</span><span>${O.fmt(hi)}</span></div>
@@ -2436,7 +2549,7 @@ function answer(q){
       ? `Oui. Sur ${Math.round(tMax/7)} semaines, ${O.l.toLowerCase()} <b>${sens}</b> d'environ <b>${O.fmt(Math.abs(per))}</b> par semaine.`
       : `Non, pas vraiment. Sur ${Math.round(tMax/7)} semaines, ${O.l.toLowerCase()} <b>ne va ni vers le haut ni vers le bas</b> de façon visible.`}</p>
       <svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:${H}px">${g}</svg>
-      <div class="lkp-lab"><span>${fmtDate(d0)}</span><span style="color:var(--ink-3)">chaque point = un jour</span><span>aujourd'hui</span></div>
+      <div class="lkp-lab"><span>${fmtDate(d0)}</span><span style="color:var(--ink-3)">chaque point = un ${UJ}</span><span>aujourd'hui</span></div>
       <div class="meta"><span>n = ${S1.length}</span><span>${O.fmt(per)} / semaine</span><span>IC ${O.fmt(per-ci)} à ${O.fmt(per+ci)}</span><span>p = ${p<0.001?'&lt; 0,001':fnum(p,3)}</span></div>`;
   }
 
@@ -2487,7 +2600,7 @@ function answer(q){
     <div style="font-size:11px;color:var(--ink-2);margin-bottom:4px">${G.lev.map((l,i)=>
       `<div style="display:flex;gap:6px"><span style="flex:1">${esc(l.l)}</span><b class="num">${O.fmt(mean(groups[i]))}</b><span style="color:var(--ink-3);width:34px;text-align:right">n=${groups[i].length}</span></div>`).join('')}</div>
     <svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:${H}px">${g}</svg>
-    <div class="lkp-lab"><span>${O.fmt(lo)}</span><span style="color:var(--ink-3)">un point = un jour · les groupes sont dans le même ordre</span><span>${O.fmt(hi)}</span></div>
+    <div class="lkp-lab"><span>${O.fmt(lo)}</span><span style="color:var(--ink-3)">un point = un ${UJ} · les groupes sont dans le même ordre</span><span>${O.fmt(hi)}</span></div>
     <div class="meta"><span>${groups.length} groupes</span><span>n = ${all.length}</span>${
       two?`<span>écart ${O.fmt(Math.abs(mean(groups[0])-mean(groups[1])))}</span>`:`<span>part expliquée ${Math.round(st.eta2*100)} %</span>`
     }<span>p = ${st.p<0.001?'&lt; 0,001':fnum(st.p,3)}</span></div>`;
@@ -2716,10 +2829,16 @@ const PRED={
   steps: {g:'steps', l:'Des pas au-dessus du seuil',      n:'Des pas sous le seuil',            f:(s,d)=>isNum(d.steps)?num(d.steps)>=S().thresholds.steps:null},
   water: {g:'water', l:'De l\u2019eau au-dessus du seuil',   n:'De l\u2019eau sous le seuil',         f:(s,d)=>isNum(d.water)?num(d.water)>=S().thresholds.water:null},
   sleepH:{g:'night', l:'Une nuit au-dessus du seuil',     n:'Une nuit sous le seuil',           f:(s,d)=>isNum(d.sleep)?num(d.sleep)>=S().thresholds.sleep:null},
-  prot:  {g:'meals', l:'Une source de protéines',         n:'Pas de source de protéines',       f:(s,d)=>d.protein===null?null:d.protein===1},
-  ultra: {g:'meals', l:'De l\u2019ultra-transformé',         n:'Rien d\u2019ultra-transformé',        f:(s,d)=>d.ultra===null?null:d.ultra===1, hide:()=>reduced()},
+  prot:  {g:'meals', l:'Une source de protéines',         n:'Pas de source de protéines',       f:(s,d)=>hasProtein(d)},
+  ultra: {g:'meals', l:'De l\u2019ultra-transformé',         n:'Rien d\u2019ultra-transformé',        f:(s,d)=>hasUltra(d), hide:()=>reduced()},
   snack: {g:'meals', l:'Du grignotage',                   n:'Pas de grignotage',                f:(s,d)=>d.snacking===null?null:d.snacking===1, hide:()=>amenOn()},
-  home:  {g:'meals', l:'Un repas préparé maison',         n:'Aucun repas préparé maison',       f:(s,d)=>d.homemade===null?null:d.homemade===1},
+  hunger:{g:'meals', l:'Une faim élevée (≥ 4)',           n:'Une faim basse (< 4)',             f:(s,d)=>isNum(d.hunger)?num(d.hunger)>=4:null},
+  home:  {g:'meals', l:'Un repas préparé maison',         n:'Aucun repas préparé maison',       f:(s,d)=>hasHome(d)},
+  gluc:  {g:'meals', l:'Des glucides',                    n:'Pas de glucides',                  f:(s,d)=>anyMealCrit(d,'G')},
+  veg:   {g:'meals', l:'Des légumes',                     n:'Pas de légumes',                   f:(s,d)=>anyMealCrit(d,'L')},
+  fruit: {g:'meals', l:'Des fruits',                      n:'Pas de fruits',                    f:(s,d)=>anyMealCrit(d,'F')},
+  leg:   {g:'meals', l:'Des légumineuses',                n:'Pas de légumineuses',              f:(s,d)=>anyMealCrit(d,'Ln')},
+  sat:   {g:'meals', l:'Un repas rassasiant',             n:'Aucun repas rassasiant',           f:(s,d)=>anyMealCrit(d,'r')},
   soc:   {g:'social', l:'Des réseaux au-dessus de ma médiane', n:'Des réseaux sous ma médiane',  f:(s,d)=>{const m=socialMedian(),t=socialTotal(d); return (m===null||t<=0)?null:t>m;}, hide:()=>!S().showSocial},
   se:    {g:'night', l:'Un sommeil efficace (≥ 85 %)',    n:'Un sommeil inefficace (< 85 %)',   f:(s,d)=>{const c=sleepCalc(d); return (c&&!c.bad)?c.se>=85:null;}},
   qual:  {g:'night', l:'Une bonne nuit (qualité ≥ 4)',    n:'Une mauvaise nuit (qualité < 4)',  f:(s,d)=>isNum(d.sd.qual)?num(d.sd.qual)>=4:null},
@@ -2811,7 +2930,13 @@ const OUT={
   siN:   {g:'others', l:'Types d\u2019interlocuteurs', f:(s,d)=>d.si.had===null?null:siCount(d), fmt:v=>fnum(v,1)+' types'},
   ...Object.fromEntries(SIWHO.map(([k,l])=>['siq_'+k,
     {g:'others', l:'Qualité — '+l.toLowerCase(), f:(s,d)=>siQualOf(d,k), fmt:v=>fnum(v,2)+'/5'}])),
-  meals: {g:'meals', l:'Qualité des repas',    f:(s,d)=>{const v=Object.values(d.meals).filter(x=>x!==null); return v.length?mean(v):null;}, fmt:v=>fnum(v,2)+'/4'},
+  meals: {g:'meals', l:'Qualité des repas',    f:(s,d)=>mealsMean(d), fmt:v=>fnum(v,2)+'/'+MPOS.length},
+  oGluc: {g:'meals', l:'Glucides',             f:(s,d)=>mRate(d,'G'),  fmt:v=>Math.round(v*100)+' % des jours'},
+  oProt: {g:'meals', l:'Protéines',            f:(s,d)=>{const v=hasProtein(d);return v===null?null:(v?1:0);}, fmt:v=>Math.round(v*100)+' % des jours'},
+  oVeg:  {g:'meals', l:'Légumes',              f:(s,d)=>mRate(d,'L'),  fmt:v=>Math.round(v*100)+' % des jours'},
+  oFruit:{g:'meals', l:'Fruits',               f:(s,d)=>mRate(d,'F'),  fmt:v=>Math.round(v*100)+' % des jours'},
+  oLeg:  {g:'meals', l:'Légumineuses',         f:(s,d)=>mRate(d,'Ln'), fmt:v=>Math.round(v*100)+' % des jours'},
+  oSat:  {g:'meals', l:'Repas rassasiants',    f:(s,d)=>mRate(d,'r'),  fmt:v=>Math.round(v*100)+' % des jours'},
   steps: {g:'steps', l:'Pas',                  f:(s,d)=>isNum(d.steps)?num(d.steps):null,   fmt:v=>fi(v)},
   km:    {g:'steps', l:'Distance parcourue',   f:(s,d)=>isNum(d.km)?num(d.km):null,         fmt:v=>fnum(v,1)+' km'},
   water: {g:'water', l:'Eau',                  f:(s,d)=>isNum(d.water)?num(d.water):null,   fmt:v=>fnum(v,2)+' L'},
@@ -2820,7 +2945,12 @@ const OUT={
   soc:   {g:'social', l:'Temps sur les réseaux',f:(s,d)=>{const t=socialTotal(d); return t>0?t:null;}, fmt:v=>fmtMin(v), hide:()=>!S().showSocial},
   snack: {g:'meals', l:'Grignotage',           f:(s,d)=>d.snacking===null?null:d.snacking,  fmt:v=>Math.round(v*100)+' % des jours', hide:()=>amenOn()},
   avail: {g:'day', l:'Disponibilité',        f:s=>readiness(s),                            fmt:v=>Math.round(v)+'/100'},
-  weight:{g:'body', l:'Poids',                f:(s,d)=>isNum(d.weight)?num(d.weight):null, fmt:v=>fnum(v,2)+' kg', hide:()=>!S().showBody}
+  hunger:{g:'meals', l:'Faim',                f:(s,d)=>isNum(d.hunger)?num(d.hunger):null,  fmt:v=>fnum(v,2)+'/5'},
+  weight:{g:'body', l:'Poids',                f:(s,d)=>isNum(d.weight)?num(d.weight):null, fmt:v=>fnum(v,2)+' kg', hide:()=>!S().showBody},
+  waist: {g:'body', weekly:true, l:'Tour de taille', f:(s,d)=>{const w=DB.weeks[isoWeek(s)]; return w&&isNum(w.waist)?num(w.waist):null;}, fmt:v=>fnum(v,1)+' cm', hide:()=>!S().showBody},
+  hips:  {g:'body', weekly:true, l:'Hanches',        f:(s,d)=>{const w=DB.weeks[isoWeek(s)]; return w&&isNum(w.hips)?num(w.hips):null;},  fmt:v=>fnum(v,1)+' cm', hide:()=>!S().showBody},
+  thigh: {g:'body', weekly:true, l:'Cuisse',         f:(s,d)=>{const w=DB.weeks[isoWeek(s)]; return w&&isNum(w.thigh)?num(w.thigh):null;}, fmt:v=>fnum(v,1)+' cm', hide:()=>!S().showBody},
+  arm:   {g:'body', weekly:true, l:'Bras',           f:(s,d)=>{const w=DB.weeks[isoWeek(s)]; return w&&isNum(w.arm)?num(w.arm):null;},   fmt:v=>fnum(v,1)+' cm', hide:()=>!S().showBody}
 };
 const predOK=()=>{ const P=predAll(); return Object.keys(P).filter(k=>!P[k].hide||!P[k].hide()); };
 /* Les catégories réellement peuplées, dans l'ordre où elles se lisent. */
@@ -2871,15 +3001,26 @@ function linkPlot(r, O, labA, labB){
 /* ═══ Explorer : quatre questions, aucun jargon ══════ */
 function serie(q){
   const O=OUT[q.c1]; if(!O) return null;
-  const out=[];
+  const out=[], seen=O.weekly?new Set():null;   // hebdo : une observation par semaine, pas 7 identiques
   loggedDates().forEach(s=>{ const d=DB.days[s]; if(!d||d.na) return;
+    if(seen){ const wk=isoWeek(s); if(seen.has(wk)) return; }
     const v=O.f(s,d); if(v===null||v===undefined||!isFinite(v)) return;
+    if(seen) seen.add(isoWeek(s));
     out.push({s, v});
   });
   return out;
 }
 function pairSerie(q){
   const A=OUT[q.c1], B=OUT[q.c2]; if(!A||!B) return [];
+  if(A.weekly||B.weekly){                        // hebdo : on agrège par semaine (une paire par semaine)
+    const byWk={};
+    loggedDates().forEach(s=>{ const d=DB.days[s]; if(!d||d.na) return;
+      const a=A.f(s,d), b=B.f(s,d);
+      if(a===null||b===null||!isFinite(a)||!isFinite(b)) return;
+      const wk=isoWeek(s); (byWk[wk]=byWk[wk]||{a:[],b:[]}); byWk[wk].a.push(a); byWk[wk].b.push(b);
+    });
+    return Object.keys(byWk).sort().map(wk=>({a:mean(byWk[wk].a), b:mean(byWk[wk].b), s:wk}));
+  }
   const out=[];
   loggedDates().forEach(s=>{
     const d=DB.days[s]; if(!d||d.na) return;
@@ -2895,6 +3036,23 @@ function pairSerie(q){
 function grpSerie(q){
   const O=OUT[q.c1], C=catAll()[q.cat]; if(!O||!C) return null;
   const m={};
+  if(O.weekly){                                  // hebdo : une obs par semaine, rangée dans la catégorie dominante de la semaine
+    const byWk={};
+    loggedDates().forEach(s=>{ const d=DB.days[s]; if(!d||d.na) return;
+      const src = q.lag===1 ? DB.days[addD(s,-1)] : d;
+      const ss  = q.lag===1 ? addD(s,-1) : s;
+      if(!src||src.na) return;
+      const g=C.f(ss,src), v=O.f(s,d);
+      if(g===null||g===undefined||v===null||!isFinite(v)) return;
+      const wk=isoWeek(s), o=(byWk[wk]=byWk[wk]||{v:null,cnt:{}});
+      o.v=v; o.cnt[g]=(o.cnt[g]||0)+1;
+    });
+    Object.values(byWk).forEach(o=>{
+      const g=Object.keys(o.cnt).sort((a,b)=>o.cnt[b]-o.cnt[a])[0];
+      if(g!==undefined && o.v!==null) (m[g]=m[g]||[]).push(o.v);
+    });
+    return {m, lev:C.lev().filter(l=>m[l.k]&&m[l.k].length>=3), C};
+  }
   loggedDates().forEach(s=>{
     const d=DB.days[s]; if(!d||d.na) return;
     const src = q.lag===1 ? DB.days[addD(s,-1)] : d;
@@ -3340,7 +3498,7 @@ Si le mode ordinateur est déjà décoché, recharge simplement une fois : Chrom
 <h4>2 · Le premier réglage</h4>
 <p>Tout se passe dans la roue dentée, en haut à droite. Cinq minutes suffisent, et rien n'est définitif.</p>
 <ul>
-<li><b>Poids et mensurations</b> — désactivé par défaut. Activé, il fait apparaître une pesée sur l'écran Aujourd'hui, les mensurations sur l'écran Semaine et une courbe dans les Bilans. Tout le reste du carnet fonctionne sans.</li>
+<li><b>Poids et mensurations</b> — désactivé par défaut. Activé, il fait apparaître une pesée et l'IMC sur l'écran Aujourd'hui, le poids moyen, l'IMC et les mensurations sur l'écran Semaine, et une courbe dans les Bilans. Il ajoute aussi un champ <em>taille (hauteur)</em> dans les réglages, saisi une fois, dont l'IMC a besoin. Tout le reste du carnet fonctionne sans.</li>
 <li><b>Je suis</b> — femme ou homme. Ce réglage pilote peu de chose, et le Répertoire le dit : il masque le menu situation pour les hommes, ajuste le seuil d'eau par défaut, et met en avant le RED-S masculin. <b>Il ne touche pas au barème</b> — les leviers ne sont pas sexués.</li>
 <li><b>Ma situation</b> — six choix : <em>J'ai mes règles</em>, <em>Aménorrhée</em>, <em>Ménopause</em>, <em>Je suis enceinte</em>, <em>J'ai accouché</em>, <em>Rien de tout ça</em>. Ce réglage pilote le cadran, le barème, les comparaisons des Bilans et les sections de ce Répertoire. C'est lui qui porte le signal, bien plus que le sexe.</li>
 <li><b>Barème du score</b> — cinq profils, puis chaque valeur s'ajuste. Quand le croisement situation × profil est documenté, un encart sourcé apparaît au-dessus. Là où la littérature n'a rien à dire, il n'y a pas d'encart.</li>
@@ -3397,11 +3555,11 @@ Si le mode ordinateur est déjà décoché, recharge simplement une fois : Chrom
 <p><b>La disponibilité</b> combine le sommeil, l'énergie et la charge des trois derniers jours en un repère indicatif — un repère maison, pas une mesure validée, et l'affichage le dit. En dessous peut apparaître un <b>signal de fatigue</b> : énergie basse et charge élevée en moyenne sur trois jours.</p>
 <p><b>Les champs</b>, dans l'ordre : la grille affective, la faim, la nuit, le sport, l'alimentation, les autres, les réseaux, puis les notes.</p>
 <p><b>« Les autres »</b> note s'il y a eu des interactions d'au moins dix minutes, puis, pour chaque type d'interlocuteur séparément, s'il y en a eu et comment elles se sont passées — « Non » signifiant qu'il n'y en a pas eu. Le seuil de dix minutes n'est pas arbitraire : il vient de la méthode de référence en la matière, détaillée dans le Répertoire.</p>
-<p><b>La qualité des repas</b> ne demande pas un jugement mais un décompte : quatre critères observables, la note dit combien sont remplis.</p>
+<p><b>L'alimentation</b> ne demande pas un jugement mais un décompte : à chaque repas, on coche les critères remplis (glucides, protéines, légumes, fruits, légumineuses, rassasié, maison, ultra-transformé), et la note d'un repas est le nombre de critères positifs cochés. Ne restent en questions du jour que le grignotage et — plus haut — la faim ressentie.</p>
 <p><b>La grille affective</b> remplace les deux rangées humeur et énergie : un seul point à poser dans un plan. L'axe horizontal est la valence — agréable ou désagréable ; l'axe vertical est l'activation — excitée ou apaisée. Les quatre quadrants portent des noms, et « tendue » n'est pas « abattue ». Le Répertoire explique pourquoi ce plan vaut mieux que deux lignes.</p>
 <p><b>La nuit</b> reprend le noyau du journal de sommeil standard. Six saisies — dont trois horaires — et une note de qualité, dont le carnet tire le temps de sommeil, le temps au lit et l'efficacité. Le coucher et le réveil suffisent à tout calculer ; le reste affine.</p>
 <p style="padding:11px;background:var(--tint);border-radius:10px;font-size:13px">
-<b>Deux comportements à connaître.</b> Toucher une valeur déjà sélectionnée l'<b>efface</b> : c'est ainsi qu'on corrige une erreur de saisie. Et une case laissée vide n'est <b>pas</b> un « non » : « rien d'ultra-transformé » ne rapporte ses points que si la case a été renseignée à « non ». Un jour non rempli vaut donc zéro, jamais des points gratuits.</p>
+<b>Deux comportements à connaître.</b> Toucher une valeur déjà sélectionnée l'<b>efface</b> — c'est ainsi qu'on corrige une saisie, y compris les lettres cochées d'un repas. Et une case laissée vide n'est <b>pas</b> un « non » : « pas de grignotage » ne rapporte ses points que si la case a été renseignée à « non », et « rien d'ultra-transformé » seulement si des repas ont été détaillés sans aucun marqueur <b>u</b>. Un jour non rempli vaut donc zéro, jamais des points gratuits.</p>
 <p><b>Le sport</b> accepte jusqu'à trois séances. Chacune demande un type, une durée et une intensité RPE de 1 à 5 ; la distance n'apparaît que pour les sports réglés en km ou en m. En haut de la séance s'affichent la charge (durée × RPE) et, le cas échéant, l'allure — en min/km, ou en min/100 m pour la natation. Les pas et la distance parcourue se saisissent en dessous, avec des boutons ± pour aller vite.</p>
 
 <h4>Semaine — le point</h4>
@@ -3409,8 +3567,8 @@ Si le mode ordinateur est déjà décoché, recharge simplement une fois : Chrom
 <p>La référence est la <b>médiane</b> des semaines déjà remplies, pas leur moyenne : une semaine de vacances ou de grippe ne doit pas déplacer la référence de toutes les autres. Il en faut deux avant que la comparaison s'affiche.</p>
 <p><b>La semaine dans le plan</b> pose les sept jours dans l'espace valence × activation, reliés dans l'ordre, avec les quatre quadrants nommés en fond. On voit d'un coup si la semaine a tourné dans un coin ou traversé le plan — deux semaines de même moyenne peuvent avoir des trajets tout à fait différents. Le point plein est le dernier jour renseigné.</p>
 <p><b>Les 7 jours</b> montre le score de chaque jour, de 0 à 100, avec le ruban des phases dessous.</p>
-<p><b>Alimentation</b> et <b>Les autres</b> ventilent ce qu'une moyenne cache. « Repas 2,3 sur 4 » ne dit pas si c'est le petit-déjeuner qui traîne ou le dîner : une barre par repas, une barre par type d'interlocuteur, avec le chiffre au bout et le nombre de jours qui l'ont produit. Un type absent n'est pas un zéro — c'est une absence, et la barre reste vide.</p>
-<p>Si le poids est activé, les <b>mensurations</b> se saisissent ici — taille, hanches, cuisse, bras — avec l'écart automatique par rapport à la semaine précédente.</p>
+<p><b>Alimentation</b> et <b>Les autres</b> ventilent ce qu'une moyenne cache. « Repas 2,3 sur 6 » ne dit pas si c'est le petit-déjeuner qui traîne ou le dîner : une barre par repas, une barre par type d'interlocuteur, avec le chiffre au bout et le nombre de jours qui l'ont produit. Un type absent n'est pas un zéro — c'est une absence, et la barre reste vide.</p>
+<p>Si le poids est activé, un bloc <b>Poids et mensurations</b> s'ajoute ici : le <b>poids moyen</b> de la semaine (moins bruité qu'une seule pesée) et son <b>IMC</b>, puis les mensurations — tour de taille, hanches, cuisse, bras — avec l'écart de tour de taille par rapport à la semaine précédente. Le Répertoire détaille comment prendre chaque mesure et comment lire les seuils.</p>
 <p><b>Le PANAS</b> s'y remplit une fois par semaine : vingt mots, notés de 1 à 5, avec la consigne « au cours de la semaine écoulée ». Il en sort deux scores — affect positif et affect négatif — qui sont deux dimensions distinctes, et non les deux bouts d'une échelle. Chacun est comparé à <b>tes propres semaines</b>, jamais à une norme : « 40 sur 50 » ne veut rien dire tant qu'on ignore où tu te situes d'habitude.</p>
 <p>Les Bilans en tirent le reste : les deux courbes semaine après semaine, la question de savoir si <b>tes</b> deux échelles sont indépendantes, et surtout ce que chacune suit — les séances, le sommeil, les réseaux, les interactions.</p>
 <p>Enfin, deux champs libres : <b>la victoire de la semaine</b> et <b>l'ajustement</b> pour la suite. Une chose qui a marché, une chose à changer. C'est le seul endroit du carnet où l'on écrit une phrase plutôt qu'un chiffre, et c'est souvent ce qu'on relit avec le plus d'intérêt.</p>
@@ -3557,7 +3715,7 @@ Blagrove RC, Bruinvels G, Pedlar CR. « Variations in strength-related measures 
 
 <h4>Trois mécaniques sont modifiées, et il faut savoir pourquoi</h4>
 <ul>
-<li><b>Le score.</b> Deux items disparaissent : « rien d'ultra-transformé » et « pas de grignotage ». Un score qui retire des points parce qu'on a mangé n'a aucun sens ici. Les quatre autres items sont repondérés pour conserver le plafond (séance 30 · pas 20 · eau 20 · protéines 20 · sommeil 15 · charge 15 = 120, plafonné à 100). Les deux cases restent saisissables, simplement elles ne comptent plus.</li>
+<li><b>Le score.</b> Deux items disparaissent : « rien d'ultra-transformé » et « pas de grignotage ». Un score qui retire des points parce qu'on a mangé n'a aucun sens ici. Les quatre autres items sont repondérés pour conserver le plafond (séance 30 · pas 20 · eau 20 · protéines 20 · sommeil 15 · charge 15 = 120, plafonné à 100). Le grignotage reste saisissable et l'ultra-transformé reste cochable par repas, simplement ils ne comptent plus dans le score.</li>
 <li><b>L'indice d'allure est désactivé.</b> L'allure ralentit pour des raisons physiologiques. L'indice annoncerait une régression qui n'en est pas une. Les séances continuent d'être enregistrées et l'indice revient au changement de situation.</li>
 <li><b>Le poids devient un simple journal.</b> Le récit habituel de ce carnet — « la tendance est le signal, les points sont le bruit » — suppose que le poids devrait être stable. En grossesse, la prise de poids est attendue. Aucune fourchette n'est affichée : les repères de prise de poids dépendent de l'IMC pré-grossesse, relèvent du suivi médical, et un carnet qui les afficherait se transformerait en juge.</li>
 </ul>
@@ -3632,30 +3790,86 @@ Physical activity and exercise during pregnancy and the postpartum period. ACOG 
 Kanellakis S, Skoufas E, Simitsopoulou E, Migdanis A, Migdanis I, Prelorentzou T, Louka A, Moschonis G, Bountziouka V, Manios Y. « Changes in body weight and body composition during the menstrual cycle. » <em>American Journal of Human Biology</em>, 2023. doi:10.1002/ajhb.23951
 </div>`},
 
+{k:'body', show:()=>S().showBody, t:'IMC et mensurations : comment mesurer, comment lire', b:`
+<p style="padding:11px;background:var(--tint);border-radius:10px;font-size:13px;border-left:2.5px solid var(--period)">
+<b>Ce carnet n'est pas un outil de diagnostic.</b> Les seuils ci-dessous sont des repères de population : ils situent, ils n'établissent rien. L'âge, l'origine ethnique, la grossesse et la musculature les déplacent. Un chiffre qui interroge se discute avec un professionnel de santé, pas avec une application.</p>
+
+<h4>L'IMC, et ce qu'il ne voit pas</h4>
+<p>L'indice de masse corporelle est le poids en kilogrammes divisé par le carré de la taille en mètres. Le carnet le calcule dès que la taille est renseignée dans les réglages. Les catégories de l'OMS :</p>
+<table class="scale-tbl">
+<tr><td>&lt; 18,5</td><td>maigreur</td></tr>
+<tr><td>18,5 – 24,9</td><td>corpulence normale</td></tr>
+<tr><td>25 – 29,9</td><td>surpoids</td></tr>
+<tr><td>≥ 30</td><td>obésité</td></tr>
+</table>
+<p>Ces bornes viennent d'un usage de <b>santé publique</b> : elles décrivent des populations, pas des individus. Leur limite est structurelle et bien documentée — <b>l'IMC ne distingue pas le muscle de la graisse</b>. Une personne qui soulève de la fonte peut être classée « surpoids » avec une masse grasse basse et d'excellents marqueurs : c'est un artefact du calcul, pas un problème de santé. À l'inverse, un IMC « normal » peut recouvrir peu de muscle et beaucoup de graisse. <span class="ev solid">établi</span></p>
+<p>Conséquence pour ce carnet, qui s'adresse à des personnes actives : <b>l'IMC est le moins informatif des repères ici</b>. Le tour de taille, lui, ne dépend pas de la masse musculaire.</p>
+
+<h4>Le tour de taille, le meilleur repère simple</h4>
+<p>C'est la mesure de santé la mieux validée qu'on puisse prendre avec un mètre ruban. Elle reflète la graisse abdominale — la graisse viscérale, celle qui pèse le plus sur le risque cardiométabolique — et elle prédit le diabète mieux que l'IMC. <span class="ev solid">établi</span></p>
+<p><b>Comment la prendre.</b> Debout, détendue, le ventre relâché, à la fin d'une expiration normale. Ruban horizontal, à même la peau, ni serré ni lâche. Le protocole de l'OMS place le ruban à mi-hauteur entre la dernière côte et le sommet de la crête iliaque — l'os de la hanche. Le repère exact importe peu, tant qu'il reste <b>le même</b> d'une fois sur l'autre.</p>
+<table class="scale-tbl">
+<tr><td>Femmes</td><td>risque accru dès 80 cm · nettement accru dès 88 cm</td></tr>
+<tr><td>Hommes</td><td>risque accru dès 94 cm · nettement accru dès 102 cm</td></tr>
+</table>
+<p>Pour les personnes d'origine sud- ou est-asiatique, les seuils sont plus bas — de l'ordre de 90 cm chez l'homme et 80 cm chez la femme : à IMC égal, la graisse viscérale y est en moyenne plus élevée. <span class="ev likely">probable</span></p>
+
+<h4>Encore plus simple : la moitié de ta taille</h4>
+<p>Un repère unique, valable quels que soient le sexe et la morphologie : <b>garder le tour de taille sous la moitié de la hauteur</b>, soit un rapport tour de taille / hauteur inférieur à <b>0,50</b>. Il s'ajuste à la stature, là où un seuil fixe traite de la même façon une personne d'1,55 m et une d'1,80 m. Une méta-analyse le trouve au moins aussi bon que le tour de taille seul ou l'IMC pour repérer le risque cardiométabolique. Le carnet affiche ce rapport dès que la taille et le tour de taille sont renseignés. <span class="ev likely">probable</span></p>
+
+<h4>Hanches, cuisse, bras</h4>
+<p><b>Hanches</b> — la partie la plus large des fesses, ruban horizontal. Elles servent surtout au rapport tour de taille / hanches (repère OMS de risque accru : au-delà de 0,85 chez la femme, 0,90 chez l'homme). Mais le tour de taille seul suffit le plus souvent, et il a un avantage : lorsque le numérateur et le dénominateur bougent tous les deux, un rapport devient difficile à lire.</p>
+<p><b>Cuisse (haut)</b> — la partie la plus large, juste sous le pli fessier. <b>Bras (biceps)</b> — à mi-distance entre l'épaule et le coude, le bras relâché le long du corps (au choix relâché <em>ou</em> contracté, mais toujours de la même manière). Ces deux mesures <b>n'ont pas de seuil de santé validé</b> : elles ne sont là que pour suivre <em>ta</em> composition dans le temps. Un tour de bras ou de cuisse qui monte pendant que le poids stagne, c'est du muscle que la balance ne voit pas. Le carnet ne leur applique donc aucune norme, à dessein.</p>
+
+<h4>Comment prendre la hauteur</h4>
+<p>Une fois suffit — elle ne change pas. Sans chaussures, talons joints contre un mur, le regard droit devant (le menton ni levé ni baissé), et l'on repère le sommet du crâne. Elle se saisit dans les réglages ; l'IMC en découle.</p>
+
+<h4>Pourquoi les mensurations complètent le poids</h4>
+<p>Le thème revient ailleurs dans ce Répertoire : la balance additionne muscle, graisse, eau et contenu digestif en un seul chiffre. Deux évolutions qu'elle ne sait pas distinguer — perdre de la graisse en gagnant du muscle, ou l'inverse — laissent le poids presque immobile. Le tour de taille, lui, bouge. C'est une <b>redistribution à masse constante</b>, et c'est précisément ce que les mensurations rendent visible. Elles se relèvent une fois par semaine, sur l'écran Semaine : elles changent lentement, les prendre chaque jour n'ajouterait que du bruit — la même raison qui fait afficher le poids en moyenne mobile plutôt qu'au jour le jour.</p>
+
+<h4>Les analyser dans Explorer</h4>
+<p>Le poids, le tour de taille, les hanches, la cuisse et le bras sont des variables dans <b>Explorer</b> (écran Bilans). La question « est-ce que ça change au fil des semaines ? » leur convient tout particulièrement — c'est là que se lit une vraie tendance de fond. Une réserve à garder en tête : les mensurations sont <b>hebdomadaires</b>. Le carnet en tient compte — il agrège une observation par semaine plutôt que de répéter la même valeur sur sept jours — mais le grain reste plus grossier que pour les variables quotidiennes, et il faut plusieurs semaines de mesures avant qu'une réponse ne se dessine.</p>
+
+<p style="margin-top:14px;padding:11px;background:var(--tint);border-radius:10px;font-size:13px">Aucun de ces nombres n'est un verdict. Ils situent une tendance, sur soi et dans le temps — pas une comparaison aux autres, et surtout pas un diagnostic. Si un seuil est franchi, ou en cas de doute, c'est une conversation avec un professionnel de santé qui a du sens, pas une case de plus à cocher.</p>
+<div class="ref">
+Organisation mondiale de la Santé. « Obesity: preventing and managing the global epidemic. » <em>WHO Technical Report Series 894</em>, Genève, 2000. (catégories d'IMC)<br><br>
+World Health Organization. « Waist circumference and waist–hip ratio: report of a WHO expert consultation, Geneva, 8–11 December 2008. » Genève : OMS, 2011.<br><br>
+Ross R, Neeland IJ, Yamashita S, Shai I, Seidell J, Magni P, et al. « Waist circumference as a vital sign in clinical practice: a Consensus Statement from the IAS and ICCR Working Group on Visceral Obesity. » <em>Nature Reviews Endocrinology</em>, 2020;16(3):177–189. doi:10.1038/s41574-019-0310-7<br><br>
+Ashwell M, Gunn P, Gibson S. « Waist-to-height ratio is a better screening tool than waist circumference and BMI for adult cardiometabolic risk factors: systematic review and meta-analysis. » <em>Obesity Reviews</em>, 2012;13(3):275–286. doi:10.1111/j.1467-789X.2011.00952.x
+</div>`},
+
 {k:'nutri', t:'Nutrition : ce que le carnet mesure, et pourquoi', b:`
 <h4>Protéines</h4>
-<p>À calories égales, les protéines constituent le macronutriment le plus rassasiant, et le seul à fournir le substrat de la synthèse musculaire. C'est pourquoi « source de protéines » pèse 15 points dans le score : il ne s'agit pas d'une case supplémentaire, mais du levier au meilleur rapport effort / effet. <span class="ev solid">établi</span></p>
+<p>À calories égales, les protéines constituent le macronutriment le plus rassasiant, et le seul à fournir le substrat de la synthèse musculaire. C'est pourquoi les protéines pèsent 15 points dans le score — le levier au meilleur rapport effort / effet. Elles se cochent désormais repas par repas (critère <b>b</b>), et le score les compte dès qu'un repas de la journée en porte. <span class="ev solid">établi</span></p>
 <h4>Ultra-transformé</h4>
-<p>Le terme provient de la classification NOVA, qui range les aliments non par leur composition nutritionnelle mais par le <b>degré et la finalité de leur transformation</b>. Un aliment ultra-transformé (groupe 4) contient typiquement des ingrédients absents d'une cuisine domestique : isolats de protéines, amidons modifiés, émulsifiants, arômes. <span class="ev solid">établi</span></p>
+<p>Le terme provient de la classification NOVA, qui range les aliments non par leur composition nutritionnelle mais par le <b>degré et la finalité de leur transformation</b>. Un aliment ultra-transformé (groupe 4) contient typiquement des ingrédients absents d'une cuisine domestique : isolats de protéines, amidons modifiés, émulsifiants, arômes. Il se marque repas par repas (marqueur <b>u</b>). <span class="ev solid">établi</span></p>
 <p>Le lien avec la prise de poids est <b>probable</b>, et le mécanisme fait débat : densité énergétique élevée, texture qui accélère la vitesse d'ingestion, faible signal de satiété. La question n'est pas morale. Un aliment ultra-transformé n'est pas une faute ; c'est un aliment dont il est facile de manger beaucoup sans s'en apercevoir. <span class="ev likely">probable</span></p>
 <h4>Grignotage</h4>
 <p>Cette case remplace deux entrées antérieures — « distributeur du boulot » et « envies pressantes » — qui décrivaient le même phénomène sous deux angles : la prise alimentaire hors repas, souvent déclenchée par le contexte plutôt que par la faim. Une seule case suffit, et elle se coche plus vite.</p>
 <p>Ce qu'elle capture n'est ni une faiblesse ni un manque de volonté, mais un <b>signal contextuel</b>. Le grignotage se corrèle fréquemment au manque de sommeil, à une journée à faible apport protéique, à un stress élevé, ou à une phase donnée du cycle lorsqu'il y en a un. L'écran Bilans compare sa fréquence entre phases quand le cycle est suivi. C'est une observation, pas un verdict.</p>
-<h4>L'échelle des repas</h4>
-<p>Elle ne demande pas un jugement, elle demande un <b>décompte</b>. Quatre critères, observables chacun par oui ou par non. La note, c'est combien sont remplis.</p>
+<h4>Ce qu'on note à chaque repas</h4>
+<p>Pas un jugement : un <b>décompte</b>. À chaque repas, on coche chaque critère qu'il remplit — plusieurs à la fois. Chacun porte une lettre :</p>
 <table class="scale-tbl">
-<tr><td>1</td><td>Une source de protéines.</td></tr>
-<tr><td>2</td><td>Des légumes ou des fruits.</td></tr>
-<tr><td>3</td><td>Rien d'ultra-transformé.</td></tr>
-<tr><td>4</td><td>De quoi tenir jusqu'au repas suivant.</td></tr>
+<tr><td><b>G</b></td><td>Glucides — pain, riz, pâtes, pomme de terre, céréales.</td></tr>
+<tr><td><b>P</b></td><td>Protéines — œuf, poisson, viande, fromage, yaourt, lait.</td></tr>
+<tr><td><b>L</b></td><td>Légumes — salade, courgette, carotte, tomate, épinards.</td></tr>
+<tr><td><b>F</b></td><td>Fruits — pomme, banane, orange, fruits rouges.</td></tr>
+<tr><td><b>Ln</b></td><td>Légumineuses — lentilles, pois chiches, haricots, fèves.</td></tr>
+<tr><td><b>r</b></td><td>Rassasié — de quoi tenir jusqu'au repas suivant.</td></tr>
+<tr><td><b>m</b></td><td>Préparé maison.</td></tr>
+<tr><td><b>u</b></td><td>Ultra-transformé.</td></tr>
 </table>
-<p>Un plat qui coche protéines et légumes mais reste industriel et laisse sur sa faim : <b>2</b>. Le même, fait maison : <b>3</b>. Le même, qui tient jusqu'au soir : <b>4</b>.</p>
+<p>La <b>note</b> d'un repas, c'est le nombre de critères <b>positifs</b> cochés — <b>G, P, L, F, Ln, r</b> — sur six. Les deux marqueurs restants ne sont pas des points : <b>u</b> (ultra-transformé) signale un défaut plutôt qu'une qualité, et <b>m</b> (maison) relève du contexte, pas de la valeur nutritionnelle. Le carnet les enregistre et les rend analysables, sans les faire entrer dans la note.</p>
+<p>Un plat avec protéines et légumineuses, mais industriel et qui laisse sur sa faim : <b>P</b>, <b>Ln</b> et <b>u</b> cochés → note <b>2</b>. Le même, fait maison et rassasiant : <b>P, Ln, r</b> plus le marqueur <b>m</b>, <b>u</b> décoché → note <b>3</b>.</p>
+<p><b>Deux remarques.</b> Recocher une lettre déjà active l'efface. Et sur un repas d'un ancien jour (noté à l'époque de 0 à 4), la première coche remplace l'ancien nombre par le nouveau détail.</p>
 <h4>Pourquoi compter plutôt que juger</h4>
-<p>Les quatre critères sont trois choses différentes : l'équilibre, le degré de transformation, la satiété. Elles ne se rangent pas les unes derrière les autres — un plat peut être équilibré et industriel, brut et insuffisant, rassasiant et déséquilibré.</p>
+<p>Les critères positifs recouvrent plusieurs choses différentes : la variété (glucides, protéines, légumineuses, fruits) et la satiété. Elles ne se rangent pas les unes derrière les autres — un plat peut être varié et vite reparti, sobre et rassasiant.</p>
 <p>Une échelle qui demanderait de trancher entre elles — « équilibré » vaut-il plus ou moins que « fait maison » ? — poserait une question sans réponse, et deux journées identiques recevraient deux notes différentes selon l'humeur du moment.</p>
 <p>Compter supprime l'arbitrage. La note dit <b>combien de bonnes choses ce repas avait</b>, pas laquelle était la plus importante — question à laquelle ce carnet n'a pas à répondre.</p>
 <h4>Préparé maison</h4>
-<p>Cette case ne juge pas la qualité — un plat maison peut être déséquilibré, un plat acheté peut être excellent. Elle capture autre chose : le <b>temps et l'attention</b> consacrés à un repas, dont on peut faire l'hypothèse qu'ils se relient à d'autres choses. C'est une variable disponible dans l'explorateur ; le carnet n'en présume rien.</p>
+<p>Le marqueur <b>M</b> ne juge pas la qualité — un plat maison peut être déséquilibré, un plat acheté peut être excellent. Il capture autre chose : le <b>temps et l'attention</b> consacrés à un repas, dont on peut faire l'hypothèse qu'ils se relient à d'autres choses. C'est pourquoi il reste un marqueur, hors de la note, tout en étant disponible dans Explorer ; le carnet n'en présume rien.</p>
+<h4>Les analyser dans l'explorateur</h4>
+<p>Chaque critère devient une variable des Bilans. Comme <b>issue</b>, tu lis sa fréquence — la part de jours avec des légumes, des fruits, des protéines, etc. Comme <b>prédicteur</b>, tu testes son influence sur autre chose : les fruits sur le sommeil, les protéines sur l'énergie, les légumineuses sur la satiété. Ce sont des liens jour à jour ; l'explorateur ne propose une paire que lorsqu'assez de jours sont renseignés des deux côtés. Les critères saisis avant ce changement (jours notés à l'ancienne) n'ont pas le détail par catégorie : ils restent muets pour ces variables-là, sans fausser les jours récents.</p>
 <div class="ref">
 Monteiro CA, Cannon G, Levy RB, Moubarac JC, Louzada ML, Rauber F, Khandpur N, Cediel G, Neri D, Martinez-Steele E, Baraldi LG, Jaime PC. « Ultra-processed foods: what they are and how to identify them. » <em>Public Health Nutrition</em>, 2019;22(5):936–941. doi:10.1017/S1368980018003762
 </div>`},
@@ -3784,7 +3998,8 @@ Carney CE, Buysse DJ, Ancoli-Israel S, Edinger JD, Krystal AD, Lichstein KL, Mor
 <tr><td style="width:auto;color:var(--ink)">Latence d'endormissement</td><td>En minutes. Le temps mis à s'endormir.</td></tr>
 <tr><td style="width:auto;color:var(--ink)">Éveils nocturnes</td><td>En minutes. Le temps passé éveillée entre l'endormissement et le réveil final.</td></tr>
 <tr><td style="width:auto;color:var(--ink)">Qualité de la nuit</td><td>De 1 à 5. Ce qu'on en a ressenti, indépendamment de ce que les horaires disent.</td></tr>
-<tr><td style="width:auto;color:var(--ink)">Qualité des repas</td><td>De 0 à 4, moyennée sur les repas du jour. Le nombre de critères remplis, pas un jugement.</td></tr>
+<tr><td style="width:auto;color:var(--ink)">Qualité des repas</td><td>De 0 à 6, moyennée sur les repas du jour. Le nombre de critères positifs remplis (glucides, protéines, légumes, fruits, légumineuses, rassasié), pas un jugement.</td></tr>
+<tr><td style="width:auto;color:var(--ink)">Glucides, protéines, légumes, fruits, légumineuses, repas rassasiants</td><td>0 ou 1 par jour selon qu'un repas au moins coche le critère. En moyenne sur un groupe de jours, cela devient une part : « 60 % des jours ». Chacun est aussi une catégorie (« des légumes » / « pas de légumes ») utilisable avant « joue sur ».</td></tr>
 <tr><td style="width:auto;color:var(--ink)">Pas</td><td>Le décompte du jour.</td></tr>
 <tr><td style="width:auto;color:var(--ink)">Distance parcourue</td><td>En kilomètres, toutes activités confondues.</td></tr>
 <tr><td style="width:auto;color:var(--ink)">Eau</td><td>En litres.</td></tr>
@@ -3970,7 +4185,7 @@ Reis HT, Wheeler L. « Studying Social Interaction with the Rochester Interactio
 <p><b>Reprise en douceur</b> — la séance vaut 40 points et la charge <b>0</b>. Se présenter suffit ; pousser n'est pas demandé. C'est le profil d'un retour après une interruption, une blessure ou une longue fatigue.</p>
 <h4>En grossesse et après un accouchement</h4>
 <p>Les deux items de restriction — « rien d'ultra-transformé » et « pas de grignotage » — sont ignorés : un score qui retire des points parce qu'on a mangé n'a aucun sens dans ces situations. Leurs points sont <b>redistribués au prorata</b> des six autres, ce qui préserve à la fois le total voulu et les priorités choisies. Les valeurs effectives s'affichent sous le barème.</p>
-<p>Un jour vide ne rapporte aucun point : les cases « ultra-transformé » et « grignotage » créditent uniquement lorsqu'elles ont été renseignées à « non », jamais lorsqu'elles sont laissées vides.</p>`},
+<p>Un jour vide ne rapporte aucun point : « pas de grignotage » crédite uniquement lorsque la case a été renseignée à « non », et « rien d'ultra-transformé » uniquement lorsque des repas ont été détaillés sans marqueur <b>u</b> — jamais lorsque rien n'est renseigné.</p>`},
 
 {k:'habit', t:'Comment se forme une habitude', b:`
 <p>Le chiffre qui circule — 21 jours — provient d'une observation de chirurgie esthétique des années 1960 portant sur le temps d'acceptation d'un nouveau visage. Ce n'est pas une donnée sur les habitudes. <span class="ev weak">contesté</span></p>
@@ -4059,6 +4274,8 @@ const PRESETS={
 function renderSet(){
   const s=S();
   $('#swBody').setAttribute('aria-checked', s.showBody?'true':'false');
+  $('#setBodyProfile').classList.toggle('hide', !s.showBody);
+  $('#setHeight').value = isNum(s.height)?s.height:'';
   renderDiag();
   $('#selSex').value = s.sex;
   $('#setSit').classList.toggle('hide', s.sex!=='f');
@@ -4255,10 +4472,10 @@ function expCSV(){
     'valence','activation','quadrant','coucher','latence_min','reveils','eveille_min','reveil','lever',
     'sommeil_total_min','temps_au_lit_min','efficacite_pct','qualite_nuit',
     'seances','charge','haut_corps','bas_corps','pas','distance_jour_km','eau_l','petit_dej','dejeuner','collation','diner',
-    'proteines','ultra_transforme','grignotage','prepare_maison',
+    'proteines','ultra_transforme','grignotage','grignotage_quoi','prepare_maison',
     'interactions','inter_travail','inter_amis','inter_famille','inter_connaissances','inter_inconnus',
     'inter_qualite_moy','inter_nb_types',
-    'poids_kg',
+    'poids_kg','imc',
     ...S().socialApps.map(a=>'reseaux_'+a.toLowerCase().replace(/[^a-z0-9]+/g,'_')), 'reseaux_total_min',
     'disponibilite','score_100','notes'];
   const yn=v=>v===null?'':(v?1:0);
@@ -4275,11 +4492,11 @@ function expCSV(){
       ...(()=>{const c=sleepCalc(d); return (c&&!c.bad)?[Math.round(c.tst),Math.round(c.tib),Math.round(c.se)]:['','',''];})(),
       d.sd.qual??'',
       sessCount(d), Math.round(loadOf(d)), yn(d.upper), yn(d.lower), d.steps??'', d.km??'', d.water??'',
-      d.meals.breakfast??'', d.meals.lunch??'', d.meals.snack??'', d.meals.dinner??'',
-      yn(d.protein), yn(d.ultra), yn(d.snacking), yn(d.homemade),
+      ...MEALK.map(([k])=>mCSV(d,k)),
+      yn(hasProtein(d)), yn(hasUltra(d)), yn(d.snacking), (d.snackNote||'').replace(/[\r\n]+/g,' '), yn(hasHome(d)),
       d.si.had??'', ...SIK.map(k=>d.si[k]??''),
       siMean(d)!==null?Math.round(siMean(d)*100)/100:'', d.si.had===null?'':siCount(d),
-      d.weight??'',
+      d.weight??'', (()=>{const b=bmi(d.weight,S().height);return b===null?'':Math.round(b*10)/10;})(),
       ...S().socialApps.map(a=>num((d.social||{})[a])||''), socialTotal(d)||'',
       readiness(s)??'', score(d)??'', (d.notes||'').replace(/[\r\n]+/g,' ')];
   });
@@ -4290,7 +4507,7 @@ function expCSV(){
     sess.push([s,i+1,x.type,x.min??'',x.rpe??'',num(x.min)*num(x.rpe),
       isNum(x.dist)?Math.round(x.dist*1000)/1000:'', u||'', pace(num(x.min),num(x.dist),u)].map(esc2).join(';'));
   });});
-  const wk=['\n\n# semaines','semaine;taille_cm;hanches_cm;cuisse_cm;bras_cm;panas_pa;panas_na;victoire;ajustement'];
+  const wk=['\n\n# semaines','semaine;tour_taille_cm;hanches_cm;cuisse_cm;bras_cm;panas_pa;panas_na;victoire;ajustement'];
   Object.keys(DB.weeks).sort().forEach(k=>{const w=DB.weeks[k], sc=panasScore(w);
     if(['waist','hips','thigh','arm','win','adjust'].some(f=>w[f]!==null&&w[f]!=='')||sc)
       wk.push([k,w.waist??'',w.hips??'',w.thigh??'',w.arm??'',sc?sc.pa:'',sc?sc.na:'',w.win||'',w.adjust||''].map(esc2).join(';'));});
@@ -4497,6 +4714,7 @@ function bind(){
     save(); renderDay();
   });
   $('#fNotes').oninput=e=>{ const d=day(curDay,true); d.notes=e.target.value; save(); };
+  $('#fSnackNote').oninput=e=>{ const d=day(curDay,true); d.snackNote=e.target.value; save(); };
   $$('[data-yn]').forEach(g=>g.onclick=e=>{
     const b=e.target.closest('button'); if(!b) return;
     const k=g.dataset.yn, v=+b.dataset.v, d=day(curDay,true);
@@ -4564,7 +4782,13 @@ function bind(){
   });
   $('#btnCard').onclick=shareCard;
 
-  $('#swBody').onclick=()=>{ S().showBody=!S().showBody; save(); renderSet(); };
+  $('#swBody').onclick=()=>{ S().showBody=!S().showBody; save(); renderSet(); render(); };
+  $('#setHeight').onchange=e=>{
+    const v=parseFloat(e.target.value);
+    S().height = (isFinite(v)&&v>=120&&v<=230) ? v : null;
+    e.target.value = isNum(S().height)?S().height:'';
+    save(); render();
+  };
   $('#swSocial').onclick=()=>{ S().showSocial=!S().showSocial; save(); renderSet(); renderGuide(); };
   $('#swAnalytics').onclick=()=>{ S().analytics=!S().analytics; save(); renderSet(); if(S().analytics) initUsage(); };
   $('#socialRows').addEventListener('input',e=>{
